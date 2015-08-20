@@ -16,7 +16,7 @@ as select
     sum(memory) as memory_of_waiting_containers_job,
     sum(vcores) as vcore_of_waiting_containers_job
 from
-    eric_cluster_metrics_dev_4.container_time_series_vhacked as cts
+    eric_cluster_metrics_dev_4.container_time_series_vhacked_with_unagg as cts
 where
     container_wait_time>10
     --and measure_date='2015-07-13'

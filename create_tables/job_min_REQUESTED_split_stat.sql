@@ -15,7 +15,7 @@ as select
     sum(if(state='REQUESTED' or state='EXPIRED',0,memory)) as memory_job,
     sum(if(state='REQUESTED' or state='EXPIRED',0,vcores)) as vcores_job
 from
-    eric_cluster_metrics_dev_4.container_time_series_vhacked as cts
+    eric_cluster_metrics_dev_4.container_time_series_vhacked_with_unagg as cts
 --where
     --measure_date='2015-07-13'
 group by
