@@ -1,0 +1,54 @@
+###################################################################
+LOG DUMP FOR: cluster_min_running_stat.sql
+###################################################################
+===================================================================
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS cluster_min_running_stat;
+
+CREATE table
+    cluster_min_running_stat
+stored as
+    ORC
+as select
+    minute_start,
+    system,
+    min(measure_date) as measure_date,
+    sum(memory_job) as memory_cluster,
+    sum(vcores_job) as vcores_cluster
+from
+    thomas_test.job_min_REQUESTED_split_stat as jsr
+GROUP by
+    minute_start,
+    system
+-------------------------------------------------------------------
+Starting query at: Thu Aug 20 23:48:56 UTC 2015
+-------------------------------------------------------------------
+
+-------------------------------------------------------------------
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_35e484be-6eb0-4774-9841-9c05731a5745_2022058643.txt
+OK
+Time taken: 0.545 seconds
+OK
+Time taken: 0.413 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1440091118973_1287)
+
+Map 1: -/-	Reducer 2: 0/1	
+Map 1: 0/1	Reducer 2: 0/1	
+Map 1: 0/1	Reducer 2: 0/1	
+Map 1: 0/1	Reducer 2: 0/1	
+Map 1: 0/1	Reducer 2: 0/1	
+Map 1: 1/1	Reducer 2: 0/1	
+Map 1: 1/1	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/cluster_min_running_stat
+OK
+Time taken: 22.396 seconds
