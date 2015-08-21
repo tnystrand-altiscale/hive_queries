@@ -8,28 +8,28 @@ stored as
     ORC
 as select
     js.job_id,
-    cts.container_id,
     js.system,
     js.measure_date,
     js.minute_start,
     js.queue,
-
     cts.container_wait_time,
-    cts.container_start_time,
-
-    if(cts.minute_start<=cts.container_start_time+30,
-       cts.memory/cts.container_wait_time*(cts.container_wait_time-30),
-       cts.minute_memory) as memory_seconds_from_minutes_waiting_longer_than_30,
-
-   -- Memory related
+    cts.container_wait_time_unagg,
     cts.memory,
+    if(cts.minute_start<=cts.container_start_time+30,
+        cts.minute_memory/cts.container_wait_time_unagg*(cts.container_wait_time-30),
+        cts.minute_memory) as memory_sec_convrt,
+    cts.container_id,
+    cts.vcores,
+    if(cts.minute_start<=cts.container_start_time+30,
+        cts.minute_vcores/cts.container_wait_time_unagg*(cts.container_wait_time-30),
+        cts.minute_vcores) as vcores_sec_convrt,
+    -- Memory related
     js.memory_job,
     js.memory_cluster,
     js.memory_capacity,
     js.memory_max_capacity,
     cts.cluster_memory as total_cluster_memory,
     -- Vcore related
-    cts.vcores,
     js.vcores_job,
     js.vcores_cluster,
     js.vcore_capacity,

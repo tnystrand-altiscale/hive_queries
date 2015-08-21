@@ -20,10 +20,10 @@ as with tmp_job_min_with_queue_lim
         thomas_test.job_min_requested_split_stat as js,
         thomas_test.capacity_combined_avgd_hour as cc
     where
-        js.queue=cc.queue_name and
-        js.system=cc.queue_system and
-        js.measure_date=cc.queue_date
-        --and floor(js.minute_start/60)*60*1000=cc.timestamp -- Convert to min and then milliseconds
+        js.queue=cc.queue_name
+        and js.system=cc.queue_system
+        and js.measure_date=cc.queue_date
+	and floor(js.minute_start/3600000)*3600000=cc.timestamp
     )
 select 
     tjs.*,

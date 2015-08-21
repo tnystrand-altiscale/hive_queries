@@ -40,3 +40,7 @@ echo "" >> $outpath
 
 hive -f $1 1>>$outpath 2> >(tee -a $logpath >&2)
 
+echo "" >> $logpath
+echo "" >> $outpath
+
+

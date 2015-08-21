@@ -23,7 +23,8 @@ create table
 		container_start_time        bigint,
 		container_minute_start_time bigint,
 		container_wait_time_unagg   bigint,
-		minute_memory               bigint
+		minute_memory               bigint,
+		minute_vcores               double
 	)
 partitioned by (
 	system string,
@@ -70,6 +71,14 @@ SELECT
 		-cts.minute_start
 		)*cf.memory
 	) AS minute_memory,
+	if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		cts.container_wait_time*cf.memory,
+		(
+		cts.container_wait_time
+		+floor(cf.requestedtime/1000)
+		-cts.minute_start
+		)*cf.vcores
+	) AS minute_vcores,
 	cts.system,
 	cts.date
 FROM
