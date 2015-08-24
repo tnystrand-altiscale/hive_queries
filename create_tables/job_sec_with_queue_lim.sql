@@ -18,12 +18,12 @@ as with tmp_job_sec_with_queue_lim
         cc.cluster_vcore_capacity
     from
         thomas_test.job_sec_requested_split_stat as js,
-        thomas_test.capacity_combined_avgd as cc
+        thomas_test.capacity_combined_avgd_hour as cc
     where
-        js.queue=cc.queue_name and
-        js.system=cc.queue_system and
-        js.date=cc.queue_date
-        --and floor(js.minute_start/60)*60*1000=cc.timestamp -- Convert to min and then milliseconds
+        js.queue=cc.queue_name
+        and js.system=cc.queue_system
+        and js.measure_date=cc.queue_date
+        and floor(js.minute_start/3600)*3600000=cc.timestamp
     )
 select 
     tjs.*,
@@ -34,5 +34,5 @@ from
     cluster_sec_running_stat as cs
 where
     tjs.system = cs.system
-    and tjs.date = cs.date
+    and tjs.measure_date = cs.measure_date
     and tjs.minute_start = cs.minute_start

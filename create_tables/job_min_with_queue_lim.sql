@@ -23,7 +23,7 @@ as with tmp_job_min_with_queue_lim
         js.queue=cc.queue_name
         and js.system=cc.queue_system
         and js.measure_date=cc.queue_date
-	and floor(js.minute_start/3600000)*3600000=cc.timestamp
+        and floor(js.minute_start/3600)*3600000=cc.timestamp
     )
 select 
     tjs.*,

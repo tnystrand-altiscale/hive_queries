@@ -1,0 +1,32 @@
+###################################################################
+LOG DUMP FOR: 11-test.sql
+###################################################################
+===================================================================
+
+===================================================================
+use thomas_test;
+
+drop table if exists test_table;
+
+create table
+	test_table
+as select
+	*
+from
+	capacity_combined
+
+-------------------------------------------------------------------
+Starting query at: Sat Aug 22 00:02:17 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_268f2f1e-d405-4e6b-8888-ceb35a039640_577004606.txt
+OK
+Time taken: 0.553 seconds
+OK
+Time taken: 0.133 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.tez.TezTask
+

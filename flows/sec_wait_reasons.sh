@@ -8,14 +8,25 @@ hive -f ../create_tables/job_sec_REQUESTED_split_stat.sql
 echo '================================================================='
 echo '::::::::::::::::::::::::::::QUERY 2::::::::::::::::::::::::::::::'
 
-hive -f ../create_tables/job_sec_with_queue_lim.sql
+hive -f ../create_tables/cluster_sec_running_stat.sql
 
 echo '================================================================='
 echo '::::::::::::::::::::::::::::QUERY 3::::::::::::::::::::::::::::::'
 
-hive -f ../create_tables/container_time_series_extended_sec.sql
+hive -f ../create_tables/job_sec_with_queue_lim.sql
 
 echo '================================================================='
 echo '::::::::::::::::::::::::::::QUERY 4::::::::::::::::::::::::::::::'
 
+hive -f ../create_tables/container_time_series_extended_sec.sql
+
+echo '================================================================='
+echo '::::::::::::::::::::::::::::QUERY 5::::::::::::::::::::::::::::::'
+
 hive -f ../create_tables/job_wait_reasons_sec_granularity.sql
+
+echo '================================================================='
+echo '::::::::::::::::::::::::::::QUERY 6::::::::::::::::::::::::::::::'
+
+hive -f ../create_tables/job_metrics_from_cts_report_sec.sql
+

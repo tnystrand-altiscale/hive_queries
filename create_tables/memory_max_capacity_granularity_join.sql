@@ -16,13 +16,15 @@ as select
     -- container_time_series based metrics per minute/per second debug
     --jm.DBG_MBmin_over_thres,
     --js.DBG_MBsec_over_thres,
-    --jm.DBG_MBmin_over_thres-js.DBG_MBsec_over_thres as dbg_diff,
+    --jm.DBG_MBmin_over_thres-js.DBG_MBsec_over_thres as dbg_diff
     
     jm.memory_waiting as memory_waiting_min,
-    jm.memory_seconds_from_minutes_waiting_longer_than_30,  
+    jm.memory_sec_convrt as memory_waiting_min_converted,
     js.memory_waiting as memory_waiting_sec,
 
+    
     jm.vcores_waiting as vcores_waiting_min,
+    jm.vcores_sec_convrt as vcores_waiting_min_converted,
     js.vcores_waiting as vcores_waiting_sec,
     
     jm.num_waited_containers as num_waited_containers_min,
@@ -33,17 +35,17 @@ as select
     --js.max_container_wait_time as sec_max_container_wait_time,
 
     -- processed container_time_series based metrics
-    jm.max_mem_capacity_robbed_MBmin/jm.memory_waiting as memory_max_capacity_robbed_ratio_min, 
+    jm.max_mem_capacity_robbed_MBmin/jm.memory_sec_convrt as memory_max_capacity_robbed_ratio_min, 
     js.max_mem_capacity_robbed_MBsec/js.memory_waiting as memory_max_capacity_robbed_ratio_sec,
     
-    jm.max_vcr_capacity_robbed_VCRmin/jm.vcores_waiting as num_vcr_capped_per_waiting_container_min, 
-    js.max_vcr_capacity_robbed_VCRsec/jm.vcores_waiting as num_vcr_capped_per_waiting_container_sec,
+    jm.max_vcr_capacity_robbed_VCRmin/jm.vcores_sec_convrt as num_vcr_capped_per_waiting_container_min, 
+    js.max_vcr_capacity_robbed_VCRsec/js.vcores_waiting as num_vcr_capped_per_waiting_container_sec,
     
-    jm.elastic_unfairness_mem_capped_MBmin/jm.memory_waiting as memory_elastic_unfairness_robbed_ratio_min,
+    jm.elastic_unfairness_mem_capped_MBmin/jm.memory_sec_convrt as memory_elastic_unfairness_robbed_ratio_min,
     js.elastic_unfairness_mem_capped_MBsec/js.memory_waiting as memory_elastic_unfairness_robbed_ratio_sec,
     
-    jm.elastic_unfairness_vcore_capped_VCRmin/jm.vcores_waiting as num_vcr_elastic_unfairness_robbed_ratio_min,
-    js.elastic_unfairness_vcore_capped_VCRsec/jm.vcores_waiting as num_vcr_elastic_unfairness_robbed_ratio_sec,
+    jm.elastic_unfairness_vcore_capped_VCRmin/jm.vcores_sec_convrt as num_vcr_elastic_unfairness_robbed_ratio_min,
+    js.elastic_unfairness_vcore_capped_VCRsec/js.vcores_waiting as num_vcr_elastic_unfairness_robbed_ratio_sec,
     
     -- direct container_fact based metrics
     -- per min and per second are not necessarily equal, per second can give smaller values
