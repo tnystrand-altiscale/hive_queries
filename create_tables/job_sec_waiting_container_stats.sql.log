@@ -1,0 +1,264 @@
+###################################################################
+LOG DUMP FOR: job_sec_waiting_container_stats.sql
+###################################################################
+===================================================================
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS job_sec_waiting_container_stats;
+
+CREATE table
+    job_sec_waiting_container_stats
+stored as
+    ORC
+as select
+    minute_start,
+    system,
+    min(measure_date) as measure_date,
+    job_id,
+    min(queue) as queue,
+    count(*) as number_waiting_containers_job,
+    sum(memory) as memory_of_waiting_containers_job,
+    sum(vcores) as vcore_of_waiting_containers_job
+from
+    eric_cluster_metrics_dev_5.container_time_series as cts
+where
+    container_wait_time>10
+--    and measure_date='2015-07-13'
+GROUP by
+    job_id,
+    minute_start,
+    system
+-------------------------------------------------------------------
+Starting query at: Wed Aug 26 00:07:13 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_a2ce11f4-3651-462b-862d-4cd8669931ec_968308637.txt
+OK
+Time taken: 0.647 seconds
+OK
+Time taken: 0.455 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1440512304447_1674)
+
+Map 1: -/-	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 0/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 1/22	Reducer 2: 0/2	
+Map 1: 2/22	Reducer 2: 0/2	
+Map 1: 3/22	Reducer 2: 0/2	
+Map 1: 3/22	Reducer 2: 0/2	
+Map 1: 3/22	Reducer 2: 0/2	
+Map 1: 3/22	Reducer 2: 0/2	
+Map 1: 4/22	Reducer 2: 0/2	
+Map 1: 4/22	Reducer 2: 0/2	
+Map 1: 5/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 6/22	Reducer 2: 0/2	
+Map 1: 7/22	Reducer 2: 0/2	
+Map 1: 8/22	Reducer 2: 0/2	
+Map 1: 8/22	Reducer 2: 0/2	
+Map 1: 8/22	Reducer 2: 0/2	
+Map 1: 8/22	Reducer 2: 0/2	
+Map 1: 8/22	Reducer 2: 0/2	
+Map 1: 8/22	Reducer 2: 0/2	
+Map 1: 8/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 9/22	Reducer 2: 0/2	
+Map 1: 10/22	Reducer 2: 0/2	
+Map 1: 10/22	Reducer 2: 0/2	
+Map 1: 10/22	Reducer 2: 0/2	
+Map 1: 10/22	Reducer 2: 0/2	
+Map 1: 10/22	Reducer 2: 0/2	
+Map 1: 10/22	Reducer 2: 0/2	
+Map 1: 10/22	Reducer 2: 0/2	
+Map 1: 10/22	Reducer 2: 0/2	
+Map 1: 11/22	Reducer 2: 0/2	
+Map 1: 12/22	Reducer 2: 0/2	
+Map 1: 12/22	Reducer 2: 0/2	
+Map 1: 12/22	Reducer 2: 0/2	
+Map 1: 12/22	Reducer 2: 0/2	
+Map 1: 13/22	Reducer 2: 0/2	
+Map 1: 14/22	Reducer 2: 0/2	
+Map 1: 14/22	Reducer 2: 0/2	
+Map 1: 14/22	Reducer 2: 0/2	
+Map 1: 14/22	Reducer 2: 0/2	
+Map 1: 15/22	Reducer 2: 0/2	
+Map 1: 15/22	Reducer 2: 0/2	
+Map 1: 15/22	Reducer 2: 0/2	
+Map 1: 15/22	Reducer 2: 0/2	
+Map 1: 15/22	Reducer 2: 0/2	
+Map 1: 16/22	Reducer 2: 0/2	
+Map 1: 17/22	Reducer 2: 0/2	
+Map 1: 18/22	Reducer 2: 0/2	
+Map 1: 18/22	Reducer 2: 0/2	
+Map 1: 19/22	Reducer 2: 0/2	
+Map 1: 19/22	Reducer 2: 0/2	
+Map 1: 19/22	Reducer 2: 0/2	
+Map 1: 20/22	Reducer 2: 0/2	
+Map 1: 20/22	Reducer 2: 0/2	
+Map 1: 20/22	Reducer 2: 0/2	
+Map 1: 20/22	Reducer 2: 0/2	
+Map 1: 20/22	Reducer 2: 0/2	
+Map 1: 20/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 21/22	Reducer 2: 0/2	
+Map 1: 22/22	Reducer 2: 0/2	
+Map 1: 22/22	Reducer 2: 0/2	
+Map 1: 22/22	Reducer 2: 1/2	
+Map 1: 22/22	Reducer 2: 2/2	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/job_sec_waiting_container_stats
+OK
+Time taken: 618.294 seconds
+

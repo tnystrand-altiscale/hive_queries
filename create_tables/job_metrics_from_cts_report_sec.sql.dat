@@ -1,0 +1,93 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DAT DUMP FOR: job_metrics_from_cts_report_sec.sql
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+===================================================================
+
+===================================================================
+use thomas_test;
+    
+drop table if exists job_metrics_from_cts_report_sec;
+
+create table
+    job_metrics_from_cts_report_sec
+as with job_metrics_gather
+    as (
+    select
+        job_id,
+        system,
+        max(number_waiting_containers_job) as max_waiting_containers,
+        avg(number_waiting_containers_job) as avg_waiting_containers,
+        max(memory_of_waiting_containers_job) as max_waiting_mem_containers,
+        avg(memory_of_waiting_containers_job) as avg_waiting_mem_containers,
+        max(vcore_of_waiting_containers_job) as max_waiting_vcr_containers,
+        avg(vcore_of_waiting_containers_job) as avg_waiting_vcr_containers
+    from
+        job_sec_waiting_container_stats
+    group by
+        job_id,
+        system
+    )
+select
+    jwr.*,
+    jmg.max_waiting_containers,
+    jmg.avg_waiting_containers,
+    jmg.max_waiting_mem_containers,
+    jmg.avg_waiting_mem_containers,
+    jmg.max_waiting_vcr_containers,
+    jmg.avg_waiting_vcr_containers
+from
+    thomas_test.job_wait_reasons_sec_granularity as jwr,
+    job_metrics_gather as jmg
+where
+    jmg.job_id=jwr.job_id and
+    jmg.system=jwr.system
+-------------------------------------------------------------------
+Starting query at: Mon Aug 24 18:40:57 UTC 2015
+-------------------------------------------------------------------
+
+jwr.job_id	jwr.system	jwr.measure_date	jwr.memory_waiting	jwr.vcores_waiting	jwr.max_container_wait_time	jwr.num_waited_containers	jwr.max_mem_capacity_robbed_mbsec	jwr.max_vcr_capacity_robbed_vcrsec	jwr.elastic_unfairness_mem_capped_mbsec	jwr.elastic_unfairness_vcore_capped_vcrsec	jwr.competing_job_mem_capped_mbsec	jwr.competing_job_vcore_capped_vcrsec	jmg.max_waiting_containers	jmg.avg_waiting_containers	jmg.max_waiting_mem_containers	jmg.avg_waiting_mem_containers	jmg.max_waiting_vcr_containers	jmg.avg_waiting_vcr_containers
+
+===================================================================
+use thomas_test;
+    
+drop table if exists job_metrics_from_cts_report_sec;
+
+create table
+    job_metrics_from_cts_report_sec
+as with job_metrics_gather
+    as (
+    select
+        job_id,
+        system,
+        max(number_waiting_containers_job) as max_waiting_containers,
+        avg(number_waiting_containers_job) as avg_waiting_containers,
+        max(memory_of_waiting_containers_job) as max_waiting_mem_containers,
+        avg(memory_of_waiting_containers_job) as avg_waiting_mem_containers,
+        max(vcore_of_waiting_containers_job) as max_waiting_vcr_containers,
+        avg(vcore_of_waiting_containers_job) as avg_waiting_vcr_containers
+    from
+        job_sec_waiting_container_stats
+    group by
+        job_id,
+        system
+    )
+select
+    jwr.*,
+    jmg.max_waiting_containers,
+    jmg.avg_waiting_containers,
+    jmg.max_waiting_mem_containers,
+    jmg.avg_waiting_mem_containers,
+    jmg.max_waiting_vcr_containers,
+    jmg.avg_waiting_vcr_containers
+from
+    thomas_test.job_wait_reasons_sec_granularity as jwr,
+    job_metrics_gather as jmg
+where
+    jmg.job_id=jwr.job_id and
+    jmg.system=jwr.system
+-------------------------------------------------------------------
+Starting query at: Wed Aug 26 00:18:23 UTC 2015
+-------------------------------------------------------------------
+
+jwr.job_id	jwr.system	jwr.measure_date	jwr.memory_waiting	jwr.vcores_waiting	jwr.max_container_wait_time	jwr.num_waited_containers	jwr.max_mem_capacity_robbed_mbsec	jwr.max_vcr_capacity_robbed_vcrsec	jwr.elastic_unfairness_mem_capped_mbsec	jwr.elastic_unfairness_vcore_capped_vcrsec	jwr.competing_job_mem_capped_mbsec	jwr.competing_job_vcore_capped_vcrsec	jmg.max_waiting_containers	jmg.avg_waiting_containers	jmg.max_waiting_mem_containers	jmg.avg_waiting_mem_containers	jmg.max_waiting_vcr_containers	jmg.avg_waiting_vcr_containers
+

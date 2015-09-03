@@ -22,13 +22,13 @@ as select
     sum(case when (vcores_job > 0.9*vcore_max_capacity ) then vcores else 0 end) as max_vcr_capacity_robbed_VCRsec,
     sum(case when (memory_cluster > 0.9*total_cluster_memory and memory_job < memory_capacity) then memory else 0 end)
         as elastic_unfairness_mem_capped_MBsec,
-    sum(case when (vcores_cluster > 0.9*total_cluster_vcores and vcores_job < vcore_capacity) then vcores else 0 end)
+    sum(case when (vcores_cluster > 0.9*total_cluster_vcores and vcores_job < vcore_capacity) then memory else 0 end)
         as elastic_unfairness_vcore_capped_VCRsec,
     sum(case when (memory_cluster > 0.9*total_cluster_memory
                     and memory_job between memory_capacity and 0.9*total_cluster_memory) then memory else 0 end)
         as competing_job_mem_capped_MBsec,
     sum(case when (vcores_cluster > 0.9*total_cluster_vcores
-                    and vcores_job between vcore_capacity and 0.9*total_cluster_vcores) then vcores else 0 end)
+                    and vcores_job between vcore_capacity and 0.9*total_cluster_vcores) then memory else 0 end)
         as competing_job_vcore_capped_VCRsec
         
 from

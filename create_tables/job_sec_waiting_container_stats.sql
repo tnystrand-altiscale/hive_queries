@@ -19,7 +19,7 @@ from
     eric_cluster_metrics_dev_5.container_time_series as cts
 where
     container_wait_time>10
-    and measure_date='2015-07-13'
+--    and measure_date='2015-07-13'
 GROUP by
     job_id,
     minute_start,

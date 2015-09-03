@@ -90,3 +90,5 @@ group by
 Starting query at: Mon Aug 24 18:31:28 UTC 2015
 -------------------------------------------------------------------
 
+job_id	system	measure_date	memory_waiting	vcores_waiting	max_container_wait_time	num_waited_containers	max_mem_capacity_robbed_mbsec	max_vcr_capacity_robbed_vcrsec	elastic_unfairness_mem_capped_mbsec	elastic_unfairness_vcore_capped_vcrsec	competing_job_mem_capped_mbsec	competing_job_vcore_capped_vcrsec
+

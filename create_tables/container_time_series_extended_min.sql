@@ -41,7 +41,7 @@ from
     eric_cluster_metrics_dev_4.container_time_series_vhacked_with_unagg as cts
 where
     cts.container_wait_time > 30 and
-    cts.measure_date        = '2015-07-13' and
+    --cts.measure_date        = '2015-07-13' and
     --cts.minute_start between 1436745600 and 1436746200 and
     --(cts.state = 'REQUESTED' or cts.state='EXPIRED') and
     js.job_id       = cts.job_id        and

@@ -16,8 +16,8 @@ as select
     sum(if(state='REQUESTED' or state='EXPIRED',0,vcores)) as vcores_job
 from
     eric_cluster_metrics_dev_5.container_time_series as cts
-where
-    measure_date='2015-07-13'
+--where
+--    measure_date='2015-07-13'
 group by
     job_id,
     minute_start,

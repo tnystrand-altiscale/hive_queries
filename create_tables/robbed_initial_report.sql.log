@@ -1,0 +1,403 @@
+###################################################################
+LOG DUMP FOR: robbed_initial_report.sql
+###################################################################
+===================================================================
+
+===================================================================
+use thomas_test;
+
+drop table if exists robbed_initial_report;
+
+create table robbed_initial_report 
+as select 
+    jis.*,
+    
+    mm.measure_date, 
+    
+    mm.num_waited_containers_min, 
+    mm.num_waited_containers_sec,
+    mm.memory_waiting_min,
+    mm.memory_waiting_sec,
+    mm.memory_waiting_min_converted,
+    mm.vcores_waiting_min,
+    mm.vcores_waiting_sec,
+    mm.vcores_waiting_min_converted,
+    
+    mm.memory_max_capacity_robbed_ratio_min, 
+    mm.memory_max_capacity_robbed_ratio_sec, 
+    mm.vcr_capped_per_waiting_container_min, 
+    mm.vcr_capped_per_waiting_container_sec,
+    mm.memory_elastic_unfairness_robbed_ratio_min,
+    mm.memory_elastic_unfairness_robbed_ratio_sec,
+    mm.vcr_elastic_unfairness_robbed_ratio_min,
+    mm.vcr_elastic_unfairness_robbed_ratio_sec,
+    mm.memory_competing_jobs_robbed_min,
+    mm.memory_competing_jobs_robbed_sec,    
+    mm.vcr_competing_jobs_robbed_min,
+    mm.vcr_competing_jobs_robbed_sec,
+    
+    mm.min_max_waiting_containers, 
+    mm.sec_max_waiting_containers, 
+    mm.min_avg_waiting_containers, 
+    mm.sec_avg_waiting_containers, 
+    mm.min_max_waiting_mem_containers, 
+    mm.sec_max_waiting_mem_containers, 
+    mm.min_avg_waiting_mem_containers, 
+    mm.sec_avg_waiting_mem_containers, 
+    mm.min_max_waiting_vcr_containers, 
+    mm.sec_max_waiting_vcr_containers, 
+    mm.min_avg_waiting_vcr_containers, 
+    mm.sec_avg_waiting_vcr_containers,
+    
+    jf.finishtime-jf.launchtime as jobtime,
+    jf.launchtime as jobstarttime
+from
+    memory_max_capacity_granularity_join as mm, 
+    job_ineff_stats as jis, 
+    cluster_metrics_prod_1.job_fact as jf 
+where 
+    jf.date between '2015-07-01' and '2015-07-30' 
+    and mm.job_id=substr(jf.id,38,30) 
+    and mm.job_id=jis.jobid
+-------------------------------------------------------------------
+Starting query at: Tue Aug 25 18:01:52 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_964fa92d-0a52-4736-902f-11164008ed2c_1317951620.txt
+OK
+Time taken: 0.982 seconds
+OK
+Time taken: 0.581 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1440512304447_0457)
+
+Map 1: -/-	Map 3: -/-	Map 4: -/-	Reducer 2: 0/1	
+Map 1: 0/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 1/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 2/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 3/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 3/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 4/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 5/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 6/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 7/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 7/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 7/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 8/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/robbed_initial_report
+OK
+Time taken: 77.238 seconds
+
+===================================================================
+use thomas_test;
+
+drop table if exists robbed_initial_report;
+
+create table robbed_initial_report 
+as select 
+    jis.*,
+    
+    mm.measure_date, 
+    
+    mm.num_waited_containers_min, 
+    mm.num_waited_containers_sec,
+    mm.memory_waiting_min,
+    mm.memory_waiting_sec,
+    mm.memory_waiting_min_converted,
+    mm.vcores_waiting_min,
+    mm.vcores_waiting_sec,
+    mm.vcores_waiting_min_converted,
+    
+    mm.memory_max_capacity_robbed_ratio_min, 
+    mm.memory_max_capacity_robbed_ratio_sec, 
+    mm.vcr_capped_per_waiting_container_min, 
+    mm.vcr_capped_per_waiting_container_sec,
+    mm.memory_elastic_unfairness_robbed_ratio_min,
+    mm.memory_elastic_unfairness_robbed_ratio_sec,
+    mm.vcr_elastic_unfairness_robbed_ratio_min,
+    mm.vcr_elastic_unfairness_robbed_ratio_sec,
+    mm.memory_competing_jobs_robbed_min,
+    mm.memory_competing_jobs_robbed_sec,    
+    mm.vcr_competing_jobs_robbed_min,
+    mm.vcr_competing_jobs_robbed_sec,
+    
+    mm.min_max_waiting_containers, 
+    mm.sec_max_waiting_containers, 
+    mm.min_avg_waiting_containers, 
+    mm.sec_avg_waiting_containers, 
+    mm.min_max_waiting_mem_containers, 
+    mm.sec_max_waiting_mem_containers, 
+    mm.min_avg_waiting_mem_containers, 
+    mm.sec_avg_waiting_mem_containers, 
+    mm.min_max_waiting_vcr_containers, 
+    mm.sec_max_waiting_vcr_containers, 
+    mm.min_avg_waiting_vcr_containers, 
+    mm.sec_avg_waiting_vcr_containers,
+    
+    jf.finishtime-jf.launchtime as jobtime,
+    jf.launchtime as jobstarttime
+from
+    memory_max_capacity_granularity_join as mm, 
+    job_ineff_stats as jis, 
+    cluster_metrics_prod_1.job_fact as jf 
+where 
+    jf.date between '2015-07-01' and '2015-07-30' 
+    and mm.job_id=substr(jf.id,38,30) 
+    and mm.job_id=jis.jobid
+-------------------------------------------------------------------
+Starting query at: Tue Aug 25 18:15:24 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_69041abf-b836-4105-ac91-32b83745c88a_483815811.txt
+OK
+Time taken: 0.541 seconds
+OK
+Time taken: 0.489 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1440512304447_0496)
+
+Map 1: -/-	Map 3: -/-	Map 4: -/-	Reducer 2: 0/1	
+Map 1: 0/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 1/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 1/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 2/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 2/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 3/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 4/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 5/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 6/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 7/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 8/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 8/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 8/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/robbed_initial_report
+OK
+Time taken: 76.525 seconds
+
+===================================================================
+use thomas_test;
+
+drop table if exists robbed_initial_report;
+
+create table robbed_initial_report 
+as select 
+    jis.*,
+   
+    mm.system, 
+    mm.measure_date, 
+    
+    mm.num_waited_containers_min, 
+    mm.num_waited_containers_sec,
+    mm.memory_waiting_min,
+    mm.memory_waiting_sec,
+    mm.memory_waiting_min_converted,
+    mm.vcores_waiting_min,
+    mm.vcores_waiting_sec,
+    mm.vcores_waiting_min_converted,
+    
+    mm.memory_max_capacity_robbed_ratio_min, 
+    mm.memory_max_capacity_robbed_ratio_sec, 
+    mm.vcr_capped_per_waiting_container_min, 
+    mm.vcr_capped_per_waiting_container_sec,
+    mm.memory_elastic_unfairness_robbed_ratio_min,
+    mm.memory_elastic_unfairness_robbed_ratio_sec,
+    mm.vcr_elastic_unfairness_robbed_ratio_min,
+    mm.vcr_elastic_unfairness_robbed_ratio_sec,
+    mm.memory_competing_jobs_robbed_min,
+    mm.memory_competing_jobs_robbed_sec,    
+    mm.vcr_competing_jobs_robbed_min,
+    mm.vcr_competing_jobs_robbed_sec,
+    
+    mm.min_max_waiting_containers, 
+    mm.sec_max_waiting_containers, 
+    mm.min_avg_waiting_containers, 
+    mm.sec_avg_waiting_containers, 
+    mm.min_max_waiting_mem_containers, 
+    mm.sec_max_waiting_mem_containers, 
+    mm.min_avg_waiting_mem_containers, 
+    mm.sec_avg_waiting_mem_containers, 
+    mm.min_max_waiting_vcr_containers, 
+    mm.sec_max_waiting_vcr_containers, 
+    mm.min_avg_waiting_vcr_containers, 
+    mm.sec_avg_waiting_vcr_containers,
+    
+    jf.finishtime-jf.launchtime as jobtime,
+    jf.launchtime as jobstarttime
+from
+    memory_max_capacity_granularity_join as mm, 
+    job_ineff_stats as jis, 
+    cluster_metrics_prod_1.job_fact as jf 
+where 
+    jf.date between '2015-07-01' and '2015-07-30' 
+    and mm.job_id=substr(jf.id,38,30) 
+    and mm.job_id=jis.jobid
+-------------------------------------------------------------------
+Starting query at: Wed Aug 26 00:32:49 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_f727acf1-c19c-4c45-b4dd-41cb80a9ef73_52540454.txt
+OK
+Time taken: 0.54 seconds
+OK
+Time taken: 0.435 seconds
+FAILED: SemanticException [Error 10036]: Duplicate column name: system
+
+===================================================================
+use thomas_test;
+
+drop table if exists robbed_initial_report;
+
+create table robbed_initial_report 
+as select 
+    jis.*,
+   
+    mm.measure_date, 
+    
+    mm.num_waited_containers_min, 
+    mm.num_waited_containers_sec,
+    mm.memory_waiting_min,
+    mm.memory_waiting_sec,
+    mm.memory_waiting_min_converted,
+    mm.vcores_waiting_min,
+    mm.vcores_waiting_sec,
+    mm.vcores_waiting_min_converted,
+    
+    mm.memory_max_capacity_robbed_ratio_min, 
+    mm.memory_max_capacity_robbed_ratio_sec, 
+    mm.vcr_capped_per_waiting_container_min, 
+    mm.vcr_capped_per_waiting_container_sec,
+    mm.memory_elastic_unfairness_robbed_ratio_min,
+    mm.memory_elastic_unfairness_robbed_ratio_sec,
+    mm.vcr_elastic_unfairness_robbed_ratio_min,
+    mm.vcr_elastic_unfairness_robbed_ratio_sec,
+    mm.memory_competing_jobs_robbed_min,
+    mm.memory_competing_jobs_robbed_sec,    
+    mm.vcr_competing_jobs_robbed_min,
+    mm.vcr_competing_jobs_robbed_sec,
+    
+    mm.min_max_waiting_containers, 
+    mm.sec_max_waiting_containers, 
+    mm.min_avg_waiting_containers, 
+    mm.sec_avg_waiting_containers, 
+    mm.min_max_waiting_mem_containers, 
+    mm.sec_max_waiting_mem_containers, 
+    mm.min_avg_waiting_mem_containers, 
+    mm.sec_avg_waiting_mem_containers, 
+    mm.min_max_waiting_vcr_containers, 
+    mm.sec_max_waiting_vcr_containers, 
+    mm.min_avg_waiting_vcr_containers, 
+    mm.sec_avg_waiting_vcr_containers,
+    
+    jf.finishtime-jf.launchtime as jobtime,
+    jf.launchtime as jobstarttime
+from
+    memory_max_capacity_granularity_join as mm, 
+    job_ineff_stats as jis, 
+    cluster_metrics_prod_1.job_fact as jf 
+where 
+    jf.date between '2015-07-01' and '2015-07-30' 
+    and mm.job_id=substr(jf.id,38,30) 
+    and mm.job_id=jis.jobid
+-------------------------------------------------------------------
+Starting query at: Wed Aug 26 00:38:46 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_296d32d1-04ad-4698-a962-52275dbc575f_112596866.txt
+OK
+Time taken: 0.538 seconds
+OK
+Time taken: 0.139 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1440512304447_1775)
+
+Map 1: -/-	Map 3: -/-	Map 4: -/-	Reducer 2: 0/1	
+Map 1: 0/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 1/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: -/-	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 0/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 1/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 1/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 2/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 2/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 3/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 5/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 6/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 7/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 8/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 8/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 8/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 1/1	Map 3: 9/9	Map 4: 2/2	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/robbed_initial_report
+OK
+Time taken: 75.84 seconds
+
