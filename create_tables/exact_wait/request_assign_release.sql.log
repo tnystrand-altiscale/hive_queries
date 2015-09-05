@@ -1,0 +1,1402 @@
+###################################################################
+LOG DUMP FOR: request_assign_release.sql
+###################################################################
+===================================================================
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    action,
+    system,
+    date
+from
+    dp_prod_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 18:53:15 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_48333568-da80-4cbc-acbf-a0da86a0da6a_296321127.txt
+OK
+Time taken: 0.677 seconds
+OK
+Time taken: 0.151 seconds
+FAILED: SemanticException [Error 10001]: Line 13:4 Table not found 'container_request'
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    action,
+    system,
+    date
+from
+    dp_prod_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 19:09:09 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_a3acbb54-cba2-434c-96f9-a9fdc29cbd20_89839129.txt
+OK
+Time taken: 0.567 seconds
+OK
+Time taken: 0.171 seconds
+FAILED: SemanticException [Error 10001]: Line 13:4 Table not found 'container_request'
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 20:54:31 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_a4b6c9ae-9c92-4558-ada3-7cea67147fc0_731875368.txt
+OK
+Time taken: 0.573 seconds
+OK
+Time taken: 0.161 seconds
+FAILED: SemanticException [Error 10004]: Line 7:4 Invalid table alias or column reference 'jobid': (possible column names are: timestamp, offset, appid, priority, memory, cores, num_containers, location, relax_locality, system, date)
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    job_id,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    job_id,
+    memory,
+    action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 20:55:13 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_70e6a1ed-70b8-416a-a84e-90ec02ecc62c_1631734211.txt
+OK
+Time taken: 0.572 seconds
+OK
+Time taken: 0.168 seconds
+FAILED: SemanticException [Error 10004]: Line 7:4 Invalid table alias or column reference 'job_id': (possible column names are: timestamp, offset, appid, priority, memory, cores, num_containers, location, relax_locality, system, date)
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 21:05:39 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b98c7d6b-5735-482a-9075-d9d4029ff016_1744387849.txt
+OK
+Time taken: 0.612 seconds
+OK
+Time taken: 0.141 seconds
+Total jobs = 4
+Launching Job 1 out of 4
+Number of reduce tasks determined at compile time: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1441039534664_33061, Tracking URL = http://rm-dogfood.s3s.altiscale.com:8088/proxy/application_1441039534664_33061/
+Kill Command = /opt/hadoop/bin/hadoop job  -kill job_1441039534664_33061
+Hadoop job information for Stage-1: number of mappers: 5; number of reducers: 1
+2015-09-04 21:05:57,498 Stage-1 map = 0%,  reduce = 0%
+2015-09-04 21:06:04,860 Stage-1 map = 20%,  reduce = 0%, Cumulative CPU 5.01 sec
+2015-09-04 21:06:08,003 Stage-1 map = 28%,  reduce = 0%, Cumulative CPU 50.98 sec
+2015-09-04 21:06:09,058 Stage-1 map = 40%,  reduce = 0%, Cumulative CPU 52.16 sec
+2015-09-04 21:06:20,526 Stage-1 map = 51%,  reduce = 0%, Cumulative CPU 104.23 sec
+2015-09-04 21:06:22,625 Stage-1 map = 64%,  reduce = 0%, Cumulative CPU 112.37 sec
+2015-09-04 21:06:26,793 Stage-1 map = 71%,  reduce = 0%, Cumulative CPU 128.78 sec
+2015-09-04 21:06:28,876 Stage-1 map = 73%,  reduce = 0%, Cumulative CPU 135.91 sec
+2015-09-04 21:06:29,920 Stage-1 map = 80%,  reduce = 0%, Cumulative CPU 137.0 sec
+2015-09-04 21:06:32,013 Stage-1 map = 93%,  reduce = 0%, Cumulative CPU 140.17 sec
+2015-09-04 21:06:34,106 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 141.85 sec
+2015-09-04 21:06:44,534 Stage-1 map = 100%,  reduce = 67%, Cumulative CPU 150.98 sec
+2015-09-04 21:06:47,670 Stage-1 map = 100%,  reduce = 68%, Cumulative CPU 154.87 sec
+2015-09-04 21:06:50,804 Stage-1 map = 100%,  reduce = 70%, Cumulative CPU 158.57 sec
+2015-09-04 21:06:53,940 Stage-1 map = 100%,  reduce = 71%, Cumulative CPU 162.25 sec
+2015-09-04 21:06:54,992 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 162.25 sec
+MapReduce Total cumulative CPU time: 2 minutes 42 seconds 250 msec
+Ended Job = job_1441039534664_33061
+Launching Job 2 out of 4
+Number of reduce tasks is set to 0 since there's no reduce operator
+Starting Job = job_1441039534664_33062, Tracking URL = http://rm-dogfood.s3s.altiscale.com:8088/proxy/application_1441039534664_33062/
+Kill Command = /opt/hadoop/bin/hadoop job  -kill job_1441039534664_33062
+Hadoop job information for Stage-2: number of mappers: 6; number of reducers: 0
+2015-09-04 21:07:09,127 Stage-2 map = 0%,  reduce = 0%
+2015-09-04 21:07:16,409 Stage-2 map = 17%,  reduce = 0%, Cumulative CPU 2.05 sec
+2015-09-04 21:07:18,528 Stage-2 map = 50%,  reduce = 0%, Cumulative CPU 15.1 sec
+2015-09-04 21:07:19,578 Stage-2 map = 83%,  reduce = 0%, Cumulative CPU 31.99 sec
+2015-09-04 21:07:24,801 Stage-2 map = 92%,  reduce = 0%, Cumulative CPU 45.4 sec
+2015-09-04 21:07:30,025 Stage-2 map = 100%,  reduce = 0%, Cumulative CPU 52.97 sec
+MapReduce Total cumulative CPU time: 52 seconds 970 msec
+Ended Job = job_1441039534664_33062
+Stage-4 is selected by condition resolver.
+Stage-3 is filtered out by condition resolver.
+Stage-5 is filtered out by condition resolver.
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/tmp/hive-tnystrand/hive_2015-09-04_21-05-44_938_19677215513001042-1/-ext-10001
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release
+MapReduce Jobs Launched: 
+Job 0: Map: 5  Reduce: 1   Cumulative CPU: 164.04 sec   HDFS Read: 78219674 HDFS Write: 292792797 SUCCESS
+Job 1: Map: 6   Cumulative CPU: 52.97 sec   HDFS Read: 296916623 HDFS Write: 304922101 SUCCESS
+Total MapReduce CPU Time Spent: 3 minutes 37 seconds 10 msec
+OK
+Time taken: 107.684 seconds
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 21:15:47 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_e8d5c117-c54a-4b5c-a18b-6dd5e8002a8e_2015995620.txt
+OK
+Time taken: 0.609 seconds
+OK
+Time taken: 0.592 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33076)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 1/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 3/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 3/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 4/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release
+OK
+Time taken: 59.585 seconds
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 21:20:05 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_ca51d02a-6763-422c-b9dc-2b7c1278bf07_2100352853.txt
+OK
+Time taken: 0.566 seconds
+OK
+Time taken: 0.414 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33135)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/6	Map 4: 1/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 1/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 3/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 3/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 4/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release
+OK
+Time taken: 59.344 seconds
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 21:23:58 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_2061de96-add3-476b-b6ff-196f448745a2_607174641.txt
+OK
+Time taken: 0.573 seconds
+OK
+Time taken: 0.473 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33137)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/6	Map 4: 1/2	Reducer 2: 0/1	
+Map 1: 1/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 3/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 3/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 4/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release
+OK
+Time taken: 60.19 seconds
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int,
+        system          string,
+        date            string
+
+    )
+paritioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:24:27 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_6f0bd539-18e9-4d66-8795-9f62659a10be_1102737666.txt
+OK
+Time taken: 0.565 seconds
+OK
+Time taken: 0.49 seconds
+FAILED: ParseException line 14:0 missing EOF at 'paritioned' near ')'
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int,
+        system          string,
+        date            string
+
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:24:55 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_de673f42-b0fc-42a0-8af9-a71bf9e93039_716897540.txt
+OK
+Time taken: 0.615 seconds
+OK
+Time taken: 0.145 seconds
+FAILED: SemanticException [Error 10035]: Column repeated in partitioning columns
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:25:25 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_8962d8ee-528c-4b3b-adfd-19f80b5e8e7b_165644404.txt
+OK
+Time taken: 0.621 seconds
+OK
+Time taken: 0.14 seconds
+OK
+Time taken: 0.517 seconds
+NoViableAltException(26@[])
+	at org.apache.hadoop.hive.ql.parse.HiveParser.destination(HiveParser.java:39846)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.insertClause(HiveParser.java:39634)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.regularBody(HiveParser.java:37684)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpressionBody(HiveParser.java:36935)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36811)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1339)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 4:17 cannot recognize input near 'request_assign_release' 'partition' '(' in destination specification
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:26:09 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_5d6e140b-6b5d-47e6-bcc2-59c447e75cce_662035270.txt
+OK
+Time taken: 0.609 seconds
+OK
+Time taken: 0.574 seconds
+OK
+Time taken: 0.253 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33503)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 0/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 1/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 0/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 1/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 2/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 3/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 4/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 4/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 5/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 0/1	
+Map 1: 6/6	Map 4: 2/2	Reducer 2: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+Failed with exception MetaException(message:Invalid partition key & values; keys [system, date, ], values [owneriq, ])
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select *
+from
+(
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+)
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:31:51 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_df66ad82-eabe-4693-a6ea-a4809949e4c9_1633124798.txt
+OK
+Time taken: 0.564 seconds
+OK
+Time taken: 0.532 seconds
+OK
+Time taken: 0.299 seconds
+NoViableAltException(-1@[207:51: ( KW_AS )?])
+	at org.antlr.runtime.DFA.noViableAlt(DFA.java:158)
+	at org.antlr.runtime.DFA.predict(DFA.java:144)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.subQuerySource(HiveParser_FromClauseParser.java:5496)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.fromSource(HiveParser_FromClauseParser.java:3949)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.joinSource(HiveParser_FromClauseParser.java:1810)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.fromClause(HiveParser_FromClauseParser.java:1465)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.fromClause(HiveParser.java:40219)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.singleSelectStatement(HiveParser.java:38106)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatement(HiveParser.java:37791)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.regularBody(HiveParser.java:37691)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpressionBody(HiveParser.java:36935)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36811)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1339)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 41:0 cannot recognize input near '<EOF>' '<EOF>' '<EOF>' in subquery source
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select *
+from
+(
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+) as sigh
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:32:23 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_ae490304-9154-4720-9ac8-0acd8270adac_756364857.txt
+OK
+Time taken: 0.576 seconds
+OK
+Time taken: 0.453 seconds
+OK
+Time taken: 0.224 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33515)
+
+Map 1: -/-	Map 3: -/-	Reducer 4: 0/1	
+Map 1: 0/2	Map 3: 0/6	Reducer 4: 0/1	
+Map 1: 0/2	Map 3: 0/6	Reducer 4: 0/1	
+Map 1: 0/2	Map 3: 0/6	Reducer 4: 0/1	
+Map 1: 0/2	Map 3: 0/6	Reducer 4: 0/1	
+Map 1: 0/2	Map 3: 1/6	Reducer 4: 0/1	
+Map 1: 0/2	Map 3: 1/6	Reducer 4: 0/1	
+Map 1: 0/2	Map 3: 2/6	Reducer 4: 0/1	
+Map 1: 1/2	Map 3: 2/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 2/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 2/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 2/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 3/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 3/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 4/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 4/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 5/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 5/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 5/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 0/1	
+Map 1: 2/2	Map 3: 6/6	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+Failed with exception MetaException(message:Invalid partition key & values; keys [system, date, ], values [drawbridge2, ])
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:39:59 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_af860f4b-626c-4e65-be2e-40d26f48b6b2_557589088.txt
+OK
+Time taken: 0.58 seconds
+OK
+Time taken: 0.418 seconds
+OK
+Time taken: 0.362 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33519)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/6	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/6	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/6	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/6	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/6	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/6	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/6	Map 5: 1/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 6/6	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=dogfood, date=2015-08-01}
+	Loading partition {system=ms3, date=2015-08-01}
+	Loading partition {system=devicescape24, date=2015-08-01}
+	Loading partition {system=drawbridge2, date=2015-08-01}
+	Loading partition {system=ms22, date=2015-08-01}
+	Loading partition {system=ia, date=2015-08-01}
+	Loading partition {system=visiblemeasures, date=2015-08-01}
+	Loading partition {system=glu, date=2015-08-01}
+	Loading partition {system=marketshare, date=2015-08-01}
+	Loading partition {system=playfirst, date=2015-08-01}
+	Loading partition {system=motleyfool, date=2015-08-01}
+	Loading partition {system=airpush, date=2015-08-01}
+	Loading partition {system=gopdatatrust, date=2015-08-01}
+	Loading partition {system=owneriq, date=2015-08-01}
+	Loading partition {system=yellowhammer, date=2015-08-01}
+	Loading partition {system=devicescape2, date=2015-08-01}
+	Loading partition {system=dlx, date=2015-08-01}
+	Loading partition {system=iheartradio, date=2015-08-01}
+	Loading partition {system=jungledata, date=2015-08-01}
+OK
+Time taken: 143.77 seconds
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-07-20'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-07-20'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 01:11:55 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_3437191a-d29f-4060-8c77-5d5659c4ca55_308956581.txt
+OK
+Time taken: 0.567 seconds
+OK
+Time taken: 1.096 seconds
+OK
+Time taken: 0.343 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33841)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: -/-	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=devicescape2, date=2015-07-20}
+	Loading partition {system=visiblemeasures, date=2015-07-20}
+	Loading partition {system=iqnavigator, date=2015-07-20}
+	Loading partition {system=jungledata, date=2015-07-20}
+	Loading partition {system=iheartradio, date=2015-07-20}
+	Loading partition {system=owneriq, date=2015-07-20}
+	Loading partition {system=firstdata, date=2015-07-20}
+	Loading partition {system=drawbridge2, date=2015-07-20}
+	Loading partition {system=jumbo, date=2015-07-20}
+	Loading partition {system=dogfood, date=2015-07-20}
+	Loading partition {system=tlg, date=2015-07-20}
+	Loading partition {system=playfirst, date=2015-07-20}
+	Loading partition {system=yellowhammer, date=2015-07-20}
+	Loading partition {system=wikimedia, date=2015-07-20}
+	Loading partition {system=dlx, date=2015-07-20}
+	Loading partition {system=wikia, date=2015-07-20}
+	Loading partition {system=motleyfool, date=2015-07-20}
+	Loading partition {system=marketshare, date=2015-07-20}
+	Loading partition {system=thasos, date=2015-07-20}
+	Loading partition {system=ms22, date=2015-07-20}
+	Loading partition {system=airpush, date=2015-07-20}
+	Loading partition {system=glu, date=2015-07-20}
+	Loading partition {system=gopdatatrust, date=2015-07-20}
+	Loading partition {system=ms3, date=2015-07-20}
+OK
+Time taken: 93.044 seconds
+

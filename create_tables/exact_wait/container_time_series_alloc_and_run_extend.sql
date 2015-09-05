@@ -1,9 +1,9 @@
 USE eric_cluster_metrics_dev_4;
 
-drop table if exists container_time_series_vhacked_with_unagg;
+drop table if exists container_time_series_alloc_and_run_extend;
 
 create table
-	container_time_series_vhacked_with_unagg (
+    container_time_series_alloc_and_run_extend (
 		container_wait_time         bigint,
 		memory                      double,
 		cluster_memory              bigint,
@@ -20,11 +20,10 @@ create table
 		vcores                      double,
 		number_apps                 bigint,
 		host                        string,
-		container_start_time        bigint,
-		container_minute_start_time bigint,
-		container_wait_time_unagg   bigint,
-		minute_memory               bigint,
-		minute_vcores               double
+		requestedtime               bigint,
+        allocatedtime               bigint,
+		requestedtime_minute        bigint,
+		container_wait_time_unagg   bigint
 	)
 partitioned by (
 	system string,
@@ -36,7 +35,7 @@ stored as
 SET hive.exec.dynamic.partition = true;
 SET hive.exec.dynamic.partition.mode = nonstrict;
 
-insert overwrite table container_time_series_vhacked_with_unagg
+insert overwrite table container_time_series_alloc_and_run_extend
 partition(system,date)
 SELECT
 	cts.container_wait_time,
@@ -55,37 +54,22 @@ SELECT
 	cts.memory/cf.memory*cts.vcores as vcores,
 	cts.number_apps,
 	cts.host,
-	cf.requestedtime as container_start_time,
-	floor(cf.requestedtime/60000)*60 as container_minute_start_time,
+	cf.requestedtime,
+    cf.allocatedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
 	if(floor(cf.requestedtime/60000)*60=cts.minute_start,
 		cts.container_wait_time,
 		cts.container_wait_time
 		+floor(cf.requestedtime/1000)
 		-cts.minute_start
 	) AS container_wait_time_unagg,
-	if(floor(cf.requestedtime/60000)*60=cts.minute_start,
-		cts.container_wait_time*cf.memory,
-		(
-		cts.container_wait_time
-		+floor(cf.requestedtime/1000)
-		-cts.minute_start
-		)*cf.memory
-	) AS minute_memory,
-	if(floor(cf.requestedtime/60000)*60=cts.minute_start,
-		cts.container_wait_time*cf.vcores,
-		(
-		cts.container_wait_time
-		+floor(cf.requestedtime/1000)
-		-cts.minute_start
-		)*cf.vcores
-	) AS minute_vcores,
 	cts.system,
 	cts.date
 FROM
 	container_time_series as cts,
 	container_fact as cf
 WHERE
-	cts.container_id 	= cf.containerid and
-	cts.system 		= cf.system
+	cts.container_id = cf.containerid and
+	cts.system 		 = cf.system
 
 

@@ -1,0 +1,194 @@
+###################################################################
+LOG DUMP FOR: stat_perminute_job.sql
+###################################################################
+===================================================================
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as select
+    job_id,
+    minute_start,
+    system,
+    min(user_key) as user_key,
+    min(measure_date) as measure_date,
+    min(queue) as queue,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=minute_start
+           and requestedtime<=minute_start 
+           and allocatedtime>0,
+           memory,0)) as memory_job,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=minute_start
+           and requestedtime<=minute_start 
+           and allocatedtime>0,
+           vcores,0)) as vcores_job
+from
+    eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+where
+    measure_date='2015-07-13'
+group by
+    job_id,
+    minute_start,
+    system
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 01:32:58 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_c37f2a9c-e2ea-43a9-86a8-833846f22eee_2085117314.txt
+OK
+Time taken: 0.573 seconds
+OK
+Time taken: 0.161 seconds
+FAILED: SemanticException [Error 10004]: Line 16:15 Invalid table alias or column reference 'allocatedtime': (possible column names are: container_wait_time, memory, cluster_memory, minute_start, job_id, queue, container_id, state, measure_date, account, cluster_uuid, principal_uuid, user_key, vcores, number_apps, host, container_start_time, container_run_time, container_minute_start_time, container_wait_time_unagg, system, date)
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as select
+    job_id,
+    minute_start,
+    system,
+    min(user_key) as user_key,
+    min(measure_date) as measure_date,
+    min(queue) as queue,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=minute_start
+           and requestedtime<=minute_start 
+           and allocatedtime>0,
+           memory,0)) as memory_job,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=minute_start
+           and requestedtime<=minute_start 
+           and allocatedtime>0,
+           vcores,0)) as vcores_job
+from
+    eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+where
+    measure_date='2015-07-13'
+group by
+    job_id,
+    minute_start,
+    system
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 01:48:32 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_2dbdb168-9475-481f-89a8-17f785407f65_738439804.txt
+OK
+Time taken: 0.575 seconds
+OK
+Time taken: 0.169 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33932)
+
+Map 1: -/-	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 1/6	Reducer 2: 0/1	
+Map 1: 2/6	Reducer 2: 0/1	
+Map 1: 3/6	Reducer 2: 0/1	
+Map 1: 4/6	Reducer 2: 0/1	
+Map 1: 5/6	Reducer 2: 0/1	
+Map 1: 5/6	Reducer 2: 0/1	
+Map 1: 6/6	Reducer 2: 0/1	
+Map 1: 6/6	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 29.762 seconds
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as select
+    job_id,
+    minute_start,
+    system,
+    min(user_key) as user_key,
+    min(measure_date) as measure_date,
+    min(queue) as queue,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=minute_start*1000
+           and requestedtime<=minute_start*1000
+           and allocatedtime>0,
+           memory,0)) as memory_job,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=minute_start*1000
+           and requestedtime<=minute_start*1000
+           and allocatedtime>0,
+           vcores,0)) as vcores_job
+from
+    eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+where
+    measure_date='2015-07-13'
+group by
+    job_id,
+    minute_start,
+    system
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 01:54:22 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_6bc6c016-beda-4232-befe-412b7db153e8_180630103.txt
+OK
+Time taken: 0.625 seconds
+OK
+Time taken: 0.491 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_33935)
+
+Map 1: -/-	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 1/6	Reducer 2: 0/1	
+Map 1: 2/6	Reducer 2: 0/1	
+Map 1: 4/6	Reducer 2: 0/1	
+Map 1: 5/6	Reducer 2: 0/1	
+Map 1: 5/6	Reducer 2: 0/1	
+Map 1: 5/6	Reducer 2: 0/1	
+Map 1: 6/6	Reducer 2: 0/1	
+Map 1: 6/6	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 32.843 seconds
+

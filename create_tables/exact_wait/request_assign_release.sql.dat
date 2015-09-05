@@ -1,0 +1,841 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DAT DUMP FOR: request_assign_release.sql
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+===================================================================
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    action,
+    system,
+    date
+from
+    dp_prod_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 18:53:15 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    action,
+    system,
+    date
+from
+    dp_prod_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 19:09:09 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    jobid,
+    memory,
+    action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 20:54:31 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    job_id,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    job_id,
+    memory,
+    action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 20:55:13 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 21:05:39 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.action	_u1.system	_u1.date
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 21:15:47 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.action	_u1.system	_u1.date
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    int(timestamp/60000)*60 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    int(timestamp/60000)*60 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 21:20:05 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.action	_u1.system	_u1.date
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table request_assign_release as
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 21:23:58 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.action	_u1.system	_u1.date
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int,
+        system          string,
+        date            string
+
+    )
+paritioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:24:27 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int,
+        system          string,
+        date            string
+
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:24:55 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:25:25 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:26:09 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select *
+from
+(
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+)
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:31:51 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nostrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select *
+from
+(
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+) as sigh
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:32:23 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-08-01'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-08-01'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep  4 23:39:59 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.action	_u1.system	_u1.date
+
+===================================================================
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-07-20'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date = '2015-07-20'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 01:11:55 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.action	_u1.system	_u1.date
+
