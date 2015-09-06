@@ -192,3 +192,762 @@ Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/sta
 OK
 Time taken: 32.843 seconds
 
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as select
+    job_id,
+    minute_start,
+    system,
+    min(user_key) as user_key,
+    min(measure_date) as measure_date,
+    min(queue) as queue,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=bigint(minute_start*1000)
+           and requestedtime<=bigint(minute_start*1000)
+           and allocatedtime>0,
+           memory,0)) as memory_job,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=bigint(minute_start*1000)
+           and requestedtime<=bigint(minute_start*1000)
+           and allocatedtime>0,
+           vcores,0)) as vcores_job
+from
+    eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+where
+    measure_date='2015-07-13'
+group by
+    job_id,
+    minute_start,
+    system
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 06:11:56 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_e43584c3-6dd4-4e97-aa01-6ddf0e6148e8_1801659274.txt
+OK
+Time taken: 0.572 seconds
+OK
+Time taken: 0.673 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_36214)
+
+Map 1: -/-	Reducer 2: 0/1	
+Map 1: 0/7	Reducer 2: 0/1	
+Map 1: 0/7	Reducer 2: 0/1	
+Map 1: 0/7	Reducer 2: 0/1	
+Map 1: 0/7	Reducer 2: 0/1	
+Map 1: 3/7	Reducer 2: 0/1	
+Map 1: 4/7	Reducer 2: 0/1	
+Map 1: 5/7	Reducer 2: 0/1	
+Map 1: 6/7	Reducer 2: 0/1	
+Map 1: 6/7	Reducer 2: 0/1	
+Map 1: 6/7	Reducer 2: 0/1	
+Map 1: 7/7	Reducer 2: 0/1	
+Map 1: 7/7	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 36.568 seconds
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as select
+    job_id,
+    minute_start,
+    system,
+    min(user_key) as user_key,
+    min(measure_date) as measure_date,
+    min(queue) as queue,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=bigint(minute_start)*1000
+           and requestedtime<=bigint(minute_start)*1000
+           and allocatedtime>0,
+           memory,0)) as memory_job,
+    sum(if(state!='REQUESTED'
+           and state!='EXPIRED'
+           and allocatedtime<=bigint(minute_start)*1000
+           and requestedtime<=bigint(minute_start)*1000
+           and allocatedtime>0,
+           vcores,0)) as vcores_job
+from
+    eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+where
+    measure_date='2015-07-13'
+group by
+    job_id,
+    minute_start,
+    system
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 06:15:23 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_f05cb9a7-0d60-4a63-8ce4-f49fa93089ce_1849838706.txt
+OK
+Time taken: 1.121 seconds
+OK
+Time taken: 1.334 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_36238)
+
+Map 1: -/-	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 0/6	Reducer 2: 0/1	
+Map 1: 1/6	Reducer 2: 0/1	
+Map 1: 2/6	Reducer 2: 0/1	
+Map 1: 3/6	Reducer 2: 0/1	
+Map 1: 4/6	Reducer 2: 0/1	
+Map 1: 5/6	Reducer 2: 0/1	
+Map 1: 5/6	Reducer 2: 0/1	
+Map 1: 5/6	Reducer 2: 0/1	
+Map 1: 6/6	Reducer 2: 0/1	
+Map 1: 6/6	Reducer 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 34.084 seconds
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        sum(if(state!='REQUESTED'
+               and state!='EXPIRED'
+               and allocatedtime<=bigint(minute_start)*1000
+               and requestedtime<=bigint(minute_start)*1000
+               and allocatedtime>0,
+               memory,0)) as memory_job,
+        sum(if(state!='REQUESTED'
+               and state!='EXPIRED'
+               and allocatedtime<=bigint(minute_start)*1000
+               and requestedtime<=bigint(minute_start)*1000
+               and allocatedtime>0,
+               vcores,0)) as vcores_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date='2015-07-13'
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    ),
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory,
+    ul.memory,
+    ql.memory,
+    cl.memory,
+    jl.vcores,
+    ul.vcores,
+    ql.vcores,
+    cl.vcores
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 06:45:07 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_7ad149c2-5b99-47b0-8383-838ad4ab1f75_2124693640.txt
+OK
+Time taken: 0.564 seconds
+OK
+Time taken: 0.451 seconds
+MismatchedTokenException(284!=295)
+	at org.antlr.runtime.BaseRecognizer.recoverFromMismatchedToken(BaseRecognizer.java:617)
+	at org.antlr.runtime.BaseRecognizer.match(BaseRecognizer.java:115)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.cteStatement(HiveParser.java:37162)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.withClause(HiveParser.java:37030)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatementWithCTE(HiveParser.java:38559)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.createTableStatement(HiveParser.java:4796)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.ddlStatement(HiveParser.java:2145)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1399)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 44:11 mismatched input '(' expecting ) near 'min' in create table statement
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        sum(if(state!='REQUESTED'
+               and state!='EXPIRED'
+               and allocatedtime<=bigint(minute_start)*1000
+               and requestedtime<=bigint(minute_start)*1000
+               and allocatedtime>0,
+               memory,0)) as memory_job,
+        sum(if(state!='REQUESTED'
+               and state!='EXPIRED'
+               and allocatedtime<=bigint(minute_start)*1000
+               and requestedtime<=bigint(minute_start)*1000
+               and allocatedtime>0,
+               vcores,0)) as vcores_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date='2015-07-13'
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    ),
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory,
+    ul.memory,
+    ql.memory,
+    cl.memory,
+    jl.vcores,
+    ul.vcores,
+    ql.vcores,
+    cl.vcores
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 06:47:13 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_2bd5a3a5-f6b5-49c9-b0a6-442b61aa8d28_194407692.txt
+OK
+Time taken: 0.567 seconds
+OK
+Time taken: 0.161 seconds
+NoViableAltException(221@[])
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.identifier(HiveParser_IdentifiersParser.java:11627)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.identifier(HiveParser.java:40239)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.cteStatement(HiveParser.java:37141)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.withClause(HiveParser.java:37030)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatementWithCTE(HiveParser.java:38559)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.createTableStatement(HiveParser.java:4796)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.ddlStatement(HiveParser.java:2145)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1399)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 83:0 cannot recognize input near 'select' 'jl' '.' in create table statement
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        sum(if(state!='REQUESTED'
+               and state!='EXPIRED'
+               and allocatedtime<=bigint(minute_start)*1000
+               and requestedtime<=bigint(minute_start)*1000
+               and allocatedtime>0,
+               memory,0)) as memory_job,
+        sum(if(state!='REQUESTED'
+               and state!='EXPIRED'
+               and allocatedtime<=bigint(minute_start)*1000
+               and requestedtime<=bigint(minute_start)*1000
+               and allocatedtime>0,
+               vcores,0)) as vcores_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date='2015-07-13'
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory,
+    ul.memory,
+    ql.memory,
+    cl.memory,
+    jl.vcores,
+    ul.vcores,
+    ql.vcores,
+    cl.vcores
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 06:47:46 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_997488a8-20a2-4528-9d5f-3d66a033921e_327209717.txt
+OK
+Time taken: 0.564 seconds
+OK
+Time taken: 0.163 seconds
+FAILED: SemanticException [Error 10002]: Line 90:7 Invalid column reference 'memory'
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        sum(if(state!='REQUESTED'
+               and state!='EXPIRED'
+               and allocatedtime<=bigint(minute_start)*1000
+               and requestedtime<=bigint(minute_start)*1000
+               and allocatedtime>0,
+               memory,0)) as memory_job,
+        sum(if(state!='REQUESTED'
+               and state!='EXPIRED'
+               and allocatedtime<=bigint(minute_start)*1000
+               and requestedtime<=bigint(minute_start)*1000
+               and allocatedtime>0,
+               vcores,0)) as vcores_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date='2015-07-13'
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep  5 06:48:34 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_c1ccdd3e-086f-44ef-ac21-2e1e26a5f5c4_1275230416.txt
+OK
+Time taken: 0.591 seconds
+OK
+Time taken: 0.167 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_36309)
+
+Map 1: -/-	Map 13: -/-	Map 6: -/-	Map 8: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/6	Map 13: 0/6	Map 6: 0/6	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/6	Map 13: 0/6	Map 6: 0/6	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/6	Map 13: 0/6	Map 6: 0/6	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/6	Map 13: 0/6	Map 6: 0/6	Map 8: 1/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/6	Map 13: 2/6	Map 6: 1/6	Map 8: 1/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/6	Map 13: 2/6	Map 6: 1/6	Map 8: 2/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/6	Map 13: 2/6	Map 6: 1/6	Map 8: 2/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/6	Map 13: 2/6	Map 6: 3/6	Map 8: 2/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/6	Map 13: 3/6	Map 6: 3/6	Map 8: 2/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/6	Map 13: 3/6	Map 6: 3/6	Map 8: 3/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/6	Map 13: 4/6	Map 6: 3/6	Map 8: 3/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/6	Map 13: 4/6	Map 6: 3/6	Map 8: 4/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 2/6	Map 13: 4/6	Map 6: 3/6	Map 8: 4/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/6	Map 13: 4/6	Map 6: 3/6	Map 8: 4/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/6	Map 13: 4/6	Map 6: 4/6	Map 8: 4/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/6	Map 13: 5/6	Map 6: 4/6	Map 8: 4/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/6	Map 13: 5/6	Map 6: 4/6	Map 8: 5/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/6	Map 13: 5/6	Map 6: 5/6	Map 8: 5/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/6	Map 13: 5/6	Map 6: 5/6	Map 8: 5/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/6	Map 13: 5/6	Map 6: 5/6	Map 8: 5/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/6	Map 13: 6/6	Map 6: 5/6	Map 8: 5/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/6	Map 13: 6/6	Map 6: 5/6	Map 8: 6/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/6	Map 13: 6/6	Map 6: 5/6	Map 8: 6/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/6	Map 13: 6/6	Map 6: 5/6	Map 8: 6/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 5/6	Map 13: 6/6	Map 6: 5/6	Map 8: 6/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 5/6	Map 13: 6/6	Map 6: 5/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 5/6	Map 13: 6/6	Map 6: 6/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 5/6	Map 13: 6/6	Map 6: 6/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 6/6	Map 13: 6/6	Map 6: 6/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 6/6	Map 13: 6/6	Map 6: 6/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 6/6	Map 13: 6/6	Map 6: 6/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 6/6	Map 13: 6/6	Map 6: 6/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 6/6	Map 13: 6/6	Map 6: 6/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 6/6	Map 13: 6/6	Map 6: 6/6	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 1/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 42.878 seconds
+
