@@ -22,6 +22,8 @@ create table
 		host                        string,
 		requestedtime               bigint,
         allocatedtime               bigint,
+		acquiredtime                bigint,
+        runningtime                 bigint,
 		requestedtime_minute        bigint,
 		container_wait_time_unagg   bigint
 	)
@@ -56,6 +58,8 @@ SELECT
 	cts.host,
 	cf.requestedtime,
     cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
 	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
 	if(floor(cf.requestedtime/60000)*60=cts.minute_start,
 		cts.container_wait_time,

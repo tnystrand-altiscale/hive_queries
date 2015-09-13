@@ -951,3 +951,1425 @@ Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/sta
 OK
 Time taken: 42.878 seconds
 
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then memory
+            case when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then memory
+            case when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then memory
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then vcores 
+            case when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then vcores
+            case when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               memory,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date='2015-07-13'
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Thu Sep 10 16:38:43 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b02faa8a-9f1e-4abb-a74e-34d58263f2f0_229347081.txt
+OK
+Time taken: 0.64 seconds
+OK
+Time taken: 0.67 seconds
+NoViableAltException(48@[266:1: atomExpression : ( KW_NULL -> TOK_NULL | dateLiteral | constant | castExpression | caseExpression | whenExpression | ( functionName LPAREN )=> function | tableOrColumn | LPAREN ! expression RPAREN !);])
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser$DFA34.specialStateTransition(HiveParser_IdentifiersParser.java:14958)
+	at org.antlr.runtime.DFA.predict(DFA.java:80)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.atomExpression(HiveParser_IdentifiersParser.java:6725)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceFieldExpression(HiveParser_IdentifiersParser.java:6946)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnaryPrefixExpression(HiveParser_IdentifiersParser.java:7331)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnarySuffixExpression(HiveParser_IdentifiersParser.java:7391)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseXorExpression(HiveParser_IdentifiersParser.java:7575)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceStarExpression(HiveParser_IdentifiersParser.java:7735)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedencePlusExpression(HiveParser_IdentifiersParser.java:7895)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAmpersandExpression(HiveParser_IdentifiersParser.java:8055)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseOrExpression(HiveParser_IdentifiersParser.java:8214)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceEqualExpression(HiveParser_IdentifiersParser.java:8744)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceNotExpression(HiveParser_IdentifiersParser.java:9757)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAndExpression(HiveParser_IdentifiersParser.java:9876)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceOrExpression(HiveParser_IdentifiersParser.java:10035)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.expression(HiveParser_IdentifiersParser.java:6651)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.whenExpression(HiveParser_IdentifiersParser.java:5965)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.atomExpression(HiveParser_IdentifiersParser.java:6828)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceFieldExpression(HiveParser_IdentifiersParser.java:6946)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnaryPrefixExpression(HiveParser_IdentifiersParser.java:7331)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnarySuffixExpression(HiveParser_IdentifiersParser.java:7391)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseXorExpression(HiveParser_IdentifiersParser.java:7575)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceStarExpression(HiveParser_IdentifiersParser.java:7735)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedencePlusExpression(HiveParser_IdentifiersParser.java:7895)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAmpersandExpression(HiveParser_IdentifiersParser.java:8055)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseOrExpression(HiveParser_IdentifiersParser.java:8214)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceEqualExpression(HiveParser_IdentifiersParser.java:8744)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceNotExpression(HiveParser_IdentifiersParser.java:9757)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAndExpression(HiveParser_IdentifiersParser.java:9876)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceOrExpression(HiveParser_IdentifiersParser.java:10035)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.expression(HiveParser_IdentifiersParser.java:6651)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.expression(HiveParser.java:40179)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectExpression(HiveParser_SelectClauseParser.java:4151)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectExpression(HiveParser.java:40215)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.function(HiveParser_IdentifiersParser.java:4923)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.atomExpression(HiveParser_IdentifiersParser.java:6843)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceFieldExpression(HiveParser_IdentifiersParser.java:6946)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnaryPrefixExpression(HiveParser_IdentifiersParser.java:7331)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnarySuffixExpression(HiveParser_IdentifiersParser.java:7391)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseXorExpression(HiveParser_IdentifiersParser.java:7575)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceStarExpression(HiveParser_IdentifiersParser.java:7735)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedencePlusExpression(HiveParser_IdentifiersParser.java:7895)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAmpersandExpression(HiveParser_IdentifiersParser.java:8055)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseOrExpression(HiveParser_IdentifiersParser.java:8214)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceEqualExpression(HiveParser_IdentifiersParser.java:8744)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceNotExpression(HiveParser_IdentifiersParser.java:9757)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAndExpression(HiveParser_IdentifiersParser.java:9876)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceOrExpression(HiveParser_IdentifiersParser.java:10035)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.expression(HiveParser_IdentifiersParser.java:6651)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.expression(HiveParser.java:40179)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectExpression(HiveParser_SelectClauseParser.java:4151)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectItem(HiveParser_SelectClauseParser.java:3038)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectList(HiveParser_SelectClauseParser.java:1335)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectClause(HiveParser_SelectClauseParser.java:1070)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectClause(HiveParser.java:40194)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.singleSelectStatement(HiveParser.java:38085)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatement(HiveParser.java:37791)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.regularBody(HiveParser.java:37728)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpressionBody(HiveParser.java:36935)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36811)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.cteStatement(HiveParser.java:37156)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.withClause(HiveParser.java:37002)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatementWithCTE(HiveParser.java:38559)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.createTableStatement(HiveParser.java:4796)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.ddlStatement(HiveParser.java:2145)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1399)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 23:12 cannot recognize input near 'memory' 'case' 'when' in expression specification
+
+===================================================================
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then memory
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then memory
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then memory
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               memory,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date='2015-07-13'
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Thu Sep 10 16:40:18 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_03038533-5c87-427d-aa48-714718d99407_1963676405.txt
+OK
+Time taken: 0.609 seconds
+OK
+Time taken: 0.141 seconds
+FAILED: SemanticException Line 24:24 Invalid table alias or column reference 'acquiredtime' in definition of CTE job_level [
+select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then memory
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then memory
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then memory
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               memory,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date='2015-07-13'
+    group by
+        job_id,
+        minute_start,
+        system
+] used as job_level at Line 52:8: (possible column names are: container_wait_time, memory, cluster_memory, minute_start, job_id, queue, container_id, state, measure_date, account, cluster_uuid, principal_uuid, user_key, vcores, number_apps, host, requestedtime, allocatedtime, requestedtime_minute, container_wait_time_unagg, system, date)
+
+===================================================================
+set START_DATE='2015-07-20';
+set END_DATE='2015-07-20';
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then memory
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then memory
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then memory
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               memory,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Thu Sep 10 17:09:40 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_321e1dad-69eb-445c-bb57-e76e1da9c890_987163678.txt
+OK
+Time taken: 0.605 seconds
+OK
+Time taken: 0.129 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_65544)
+
+Map 1: -/-	Map 13: -/-	Map 6: -/-	Map 8: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: -/-	Map 6: 0/7	Map 8: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 0/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 0/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 0/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 2/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 3/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 4/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 5/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 6/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/7	Map 13: 0/7	Map 6: 7/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/7	Map 13: 0/7	Map 6: 7/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 2/7	Map 13: 0/7	Map 6: 7/7	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 2/7	Map 13: 1/7	Map 6: 7/7	Map 8: 1/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 2/7	Map 13: 2/7	Map 6: 7/7	Map 8: 1/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 3/7	Map 6: 7/7	Map 8: 3/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 3/7	Map 6: 7/7	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 5/7	Map 13: 3/7	Map 6: 7/7	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 5/7	Map 13: 4/7	Map 6: 7/7	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 6/7	Map 13: 4/7	Map 6: 7/7	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 7/7	Map 13: 6/7	Map 6: 7/7	Map 8: 5/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 7/7	Map 13: 6/7	Map 6: 7/7	Map 8: 5/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 7/7	Map 13: 6/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 7/7	Map 13: 6/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 7/7	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 1/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 29.784 seconds
+
+===================================================================
+set START_DATE='2015-07-20';
+set END_DATE='2015-07-20';
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then memory
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then memory
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then memory
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               memory,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 11 17:36:44 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_240a68ce-b487-4f4e-9539-7aaf6185bd10_372216946.txt
+OK
+Time taken: 0.723 seconds
+OK
+Time taken: 0.789 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_71349)
+
+Map 1: -/-	Map 13: -/-	Map 6: -/-	Map 8: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 0/7	Map 6: 0/10	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 0/7	Map 6: 0/10	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 0/7	Map 6: 0/10	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 1/7	Map 6: 0/10	Map 8: 1/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 2/7	Map 6: 0/10	Map 8: 1/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 4/7	Map 6: 0/10	Map 8: 1/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 4/7	Map 6: 0/10	Map 8: 3/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 4/7	Map 6: 0/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 6/7	Map 6: 0/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 7/7	Map 6: 0/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 7/7	Map 6: 0/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 7/7	Map 6: 0/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 7/7	Map 6: 0/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/10	Map 13: 7/7	Map 6: 1/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 2/10	Map 13: 7/7	Map 6: 1/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/10	Map 13: 7/7	Map 6: 2/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/10	Map 13: 7/7	Map 6: 5/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/10	Map 13: 7/7	Map 6: 5/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/10	Map 13: 7/7	Map 6: 6/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 6/10	Map 13: 7/7	Map 6: 7/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 13: 7/7	Map 6: 7/10	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 8/10	Map 13: 7/7	Map 6: 8/10	Map 8: 5/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 8/10	Map 13: 7/7	Map 6: 9/10	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 8/10	Map 13: 7/7	Map 6: 9/10	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 10/10	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 10/10	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 10/10	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 10/10	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 10/10	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 10/10	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 10/10	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 1/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 34.977 seconds
+
+===================================================================
+set START_DATE='2015-07-20';
+set END_DATE='2015-07-21';
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then memory
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then memory
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then memory
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               memory,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 11 17:39:48 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_6f064692-e49d-4fad-8e53-4bfb7e85e8fe_193563260.txt
+OK
+Time taken: 0.565 seconds
+OK
+Time taken: 0.421 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_71352)
+
+Map 1: -/-	Map 13: -/-	Map 6: -/-	Map 8: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 0/7	Map 6: 0/6	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 0/7	Map 6: 0/6	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 0/7	Map 6: 0/6	Map 8: 0/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 13: 0/7	Map 6: 0/6	Map 8: 1/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/10	Map 13: 1/7	Map 6: 0/6	Map 8: 1/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/10	Map 13: 1/7	Map 6: 0/6	Map 8: 2/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/10	Map 13: 3/7	Map 6: 0/6	Map 8: 3/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 6/10	Map 13: 3/7	Map 6: 2/6	Map 8: 3/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 13: 3/7	Map 6: 2/6	Map 8: 3/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 13: 4/7	Map 6: 2/6	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 13: 4/7	Map 6: 3/6	Map 8: 4/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 8/10	Map 13: 4/7	Map 6: 3/6	Map 8: 5/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 9/10	Map 13: 5/7	Map 6: 4/6	Map 8: 6/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 10/10	Map 13: 6/7	Map 6: 6/6	Map 8: 6/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 6/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 7/7	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 13: 7/7	Map 6: 6/6	Map 8: 7/7	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 1/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 27.582 seconds
+
+===================================================================
+set START_DATE='2015-07-20';
+set END_DATE='2015-07-20';
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then memory
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then memory
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then memory
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               memory,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        --measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+        measure_date='2015-07-20'
+group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 11 17:41:15 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_0f7d0c3b-d8ca-4659-934a-df4cd34057e1_843905281.txt
+OK
+Time taken: 0.713 seconds
+OK
+Time taken: 0.729 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_71356)
+
+Map 1: -/-	Map 13: -/-	Map 6: -/-	Map 8: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 13: 0/6	Map 6: 0/9	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 13: 0/6	Map 6: 0/9	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 13: 0/6	Map 6: 0/9	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 13: 0/6	Map 6: 1/9	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 13: 0/6	Map 6: 2/9	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 13: 0/6	Map 6: 5/9	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 2/9	Map 13: 1/6	Map 6: 5/9	Map 8: 0/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/9	Map 13: 1/6	Map 6: 5/9	Map 8: 1/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/9	Map 13: 1/6	Map 6: 5/9	Map 8: 1/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 5/9	Map 13: 2/6	Map 6: 5/9	Map 8: 1/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 13: 2/6	Map 6: 6/9	Map 8: 1/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 13: 2/6	Map 6: 6/9	Map 8: 3/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 13: 3/6	Map 6: 6/9	Map 8: 3/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 13: 3/6	Map 6: 8/9	Map 8: 4/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 8/9	Map 13: 5/6	Map 6: 9/9	Map 8: 4/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 9/9	Map 13: 5/6	Map 6: 9/9	Map 8: 6/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 0/1	
+Map 1: 9/9	Map 13: 6/6	Map 6: 9/9	Map 8: 6/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 13: 6/6	Map 6: 9/9	Map 8: 6/6	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 13: 6/6	Map 6: 9/9	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 13: 6/6	Map 6: 9/9	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 13: 6/6	Map 6: 9/9	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 13: 6/6	Map 6: 9/9	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 13: 6/6	Map 6: 9/9	Map 8: 6/6	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 1/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 24.322 seconds
+
+===================================================================
+set START_DATE='2015-07-10';
+set END_DATE='2015-07-10';
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then memory
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then memory
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then memory
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               memory,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system)
+
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 11 17:52:17 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_3e1bba09-696d-475a-9881-8796e97ebc08_723062501.txt
+OK
+Time taken: 0.578 seconds
+OK
+Time taken: 0.448 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_71373)
+
+Map 1: -/-	Map 13: -/-	Map 6: -/-	Map 8: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: -/-	Map 6: 0/10	Map 8: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 0/10	Map 8: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 0/10	Map 8: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 0/7	Map 6: 0/10	Map 8: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 1/7	Map 6: 0/10	Map 8: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 2/7	Map 6: 0/10	Map 8: 1/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 0/7	Map 13: 3/7	Map 6: 3/10	Map 8: 1/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/7	Map 13: 3/7	Map 6: 3/10	Map 8: 4/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 1/7	Map 13: 3/7	Map 6: 3/10	Map 8: 5/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 3/7	Map 6: 5/10	Map 8: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 3/7	Map 6: 6/10	Map 8: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 4/7	Map 6: 6/10	Map 8: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 4/7	Map 6: 6/10	Map 8: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 4/7	Map 6: 6/10	Map 8: 8/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 4/7	Map 6: 6/10	Map 8: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 3/7	Map 13: 5/7	Map 6: 7/10	Map 8: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/7	Map 13: 5/7	Map 6: 7/10	Map 8: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/7	Map 13: 6/7	Map 6: 7/10	Map 8: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/7	Map 13: 7/7	Map 6: 8/10	Map 8: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 4/7	Map 13: 7/7	Map 6: 9/10	Map 8: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 6/7	Map 13: 7/7	Map 6: 9/10	Map 8: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 0/1	
+Map 1: 6/7	Map 13: 7/7	Map 6: 9/10	Map 8: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 0/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 6/7	Map 13: 7/7	Map 6: 9/10	Map 8: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 9/10	Map 8: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 9/10	Map 8: 10/10	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 10/10	Map 8: 10/10	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 10/10	Map 8: 10/10	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 10/10	Map 8: 10/10	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 0/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 10/10	Map 8: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 10/10	Map 8: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 0/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 10/10	Map 8: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 0/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Map 1: 7/7	Map 13: 7/7	Map 6: 10/10	Map 8: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 12: 1/1	Reducer 14: 1/1	Reducer 15: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 5: 1/1	Reducer 7: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 30.483 seconds
+

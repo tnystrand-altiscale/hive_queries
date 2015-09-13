@@ -1,10 +1,13 @@
+set START_DATE='2015-07-10';
+set END_DATE='2015-07-10';
+
 use thomas_test;
 
 drop table if exists request_assign_release;
 
 create table
     request_assign_release (
-        minute_start    bigint,
+        minute_start    int,
         timestamp       bigint,
         jobid           string,
         memory          int,
@@ -24,7 +27,7 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 insert overwrite table request_assign_release
 partition(system,date)
 select
-    bigint(timestamp/60000)*60000 as minute_start,
+    int(bigint(timestamp/60000)*60) as minute_start,
     timestamp,
     concat('job_',substr(appid,13)) as jobid,
     memory,
@@ -34,10 +37,10 @@ select
 from
     dp_prod_1_resourcemanager_events.container_request
 where
-    date = '2015-07-20'
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
 union all
 select
-    bigint(timestamp/60000)*60000 as minute_start,
+    int(bigint(timestamp/60000)*60) as minute_start,
     timestamp,
     concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
     memory,
@@ -51,6 +54,6 @@ select
 from
     dp_prod_1_resourcemanager_events.assign_release
 where
-    date = '2015-07-20'
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
 order by
     timestamp

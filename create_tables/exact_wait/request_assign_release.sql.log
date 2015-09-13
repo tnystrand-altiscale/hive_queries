@@ -1400,3 +1400,1094 @@ Loading data to table thomas_test.request_assign_release partition (system=null,
 OK
 Time taken: 93.044 seconds
 
+===================================================================
+set START_DATE='2015-07-20';
+set END_DATE='2015-07-20';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-07-20'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between '${hiveconf:START_DATE}' and '${hiveconf:END_DATE}'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 10 17:05:52 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_266fe089-4967-4f99-bff1-dde762d09443_1969346707.txt
+OK
+Time taken: 0.611 seconds
+OK
+Time taken: 0.794 seconds
+OK
+Time taken: 0.242 seconds
+NoViableAltException(290@[221:1: constant : ( Number | dateLiteral | StringLiteral | stringLiteralSequence | BigintLiteral | SmallintLiteral | TinyintLiteral | DecimalLiteral | charSetStringLiteral | booleanValue );])
+	at org.antlr.runtime.DFA.noViableAlt(DFA.java:158)
+	at org.antlr.runtime.DFA.predict(DFA.java:116)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.constant(HiveParser_IdentifiersParser.java:6128)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.atomExpression(HiveParser_IdentifiersParser.java:6783)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceFieldExpression(HiveParser_IdentifiersParser.java:6946)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnaryPrefixExpression(HiveParser_IdentifiersParser.java:7331)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnarySuffixExpression(HiveParser_IdentifiersParser.java:7391)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseXorExpression(HiveParser_IdentifiersParser.java:7575)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceStarExpression(HiveParser_IdentifiersParser.java:7735)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedencePlusExpression(HiveParser_IdentifiersParser.java:7895)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAmpersandExpression(HiveParser_IdentifiersParser.java:8055)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseOrExpression(HiveParser_IdentifiersParser.java:8214)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceEqualExpression(HiveParser_IdentifiersParser.java:9318)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceNotExpression(HiveParser_IdentifiersParser.java:9757)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAndExpression(HiveParser_IdentifiersParser.java:9876)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceOrExpression(HiveParser_IdentifiersParser.java:10035)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.expression(HiveParser_IdentifiersParser.java:6651)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.expression(HiveParser.java:40179)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.searchCondition(HiveParser_FromClauseParser.java:6777)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.whereClause(HiveParser_FromClauseParser.java:6685)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.whereClause(HiveParser.java:40197)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.singleSelectStatement(HiveParser.java:38133)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatement(HiveParser.java:37845)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.regularBody(HiveParser.java:37691)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpressionBody(HiveParser.java:36935)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36811)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1339)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 34:19 cannot recognize input near '''' '2015' '-' in constant
+
+===================================================================
+set START_DATE='2015-07-20';
+set END_DATE='2015-07-20';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-07-20'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between '${hiveconf:START_DATE}' and '${hiveconf:END_DATE}'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 10 17:07:04 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_aa10a1af-5f0c-4029-bd6a-7699bd40d7b5_1223606392.txt
+OK
+Time taken: 0.574 seconds
+OK
+Time taken: 0.477 seconds
+OK
+Time taken: 0.296 seconds
+NoViableAltException(290@[221:1: constant : ( Number | dateLiteral | StringLiteral | stringLiteralSequence | BigintLiteral | SmallintLiteral | TinyintLiteral | DecimalLiteral | charSetStringLiteral | booleanValue );])
+	at org.antlr.runtime.DFA.noViableAlt(DFA.java:158)
+	at org.antlr.runtime.DFA.predict(DFA.java:116)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.constant(HiveParser_IdentifiersParser.java:6128)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.atomExpression(HiveParser_IdentifiersParser.java:6783)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceFieldExpression(HiveParser_IdentifiersParser.java:6946)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnaryPrefixExpression(HiveParser_IdentifiersParser.java:7331)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnarySuffixExpression(HiveParser_IdentifiersParser.java:7391)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseXorExpression(HiveParser_IdentifiersParser.java:7575)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceStarExpression(HiveParser_IdentifiersParser.java:7735)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedencePlusExpression(HiveParser_IdentifiersParser.java:7895)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAmpersandExpression(HiveParser_IdentifiersParser.java:8055)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseOrExpression(HiveParser_IdentifiersParser.java:8214)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceEqualExpression(HiveParser_IdentifiersParser.java:9318)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceNotExpression(HiveParser_IdentifiersParser.java:9757)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAndExpression(HiveParser_IdentifiersParser.java:9876)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceOrExpression(HiveParser_IdentifiersParser.java:10035)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.expression(HiveParser_IdentifiersParser.java:6651)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.expression(HiveParser.java:40179)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.searchCondition(HiveParser_FromClauseParser.java:6777)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.whereClause(HiveParser_FromClauseParser.java:6685)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.whereClause(HiveParser.java:40197)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.singleSelectStatement(HiveParser.java:38133)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatement(HiveParser.java:37845)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.regularBody(HiveParser.java:37691)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpressionBody(HiveParser.java:36935)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36811)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1339)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 34:19 cannot recognize input near '''' '2015' '-' in constant
+
+===================================================================
+set START_DATE='2015-07-20';
+set END_DATE='2015-07-20';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-07-20'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between '${hiveconf:START_DATE}' and '${hiveconf:END_DATE}'
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 10 17:08:53 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b8b1aec1-3c1f-4b3d-a399-d4bb319c7580_456602071.txt
+OK
+Time taken: 0.608 seconds
+OK
+Time taken: 0.505 seconds
+OK
+Time taken: 0.259 seconds
+NoViableAltException(290@[221:1: constant : ( Number | dateLiteral | StringLiteral | stringLiteralSequence | BigintLiteral | SmallintLiteral | TinyintLiteral | DecimalLiteral | charSetStringLiteral | booleanValue );])
+	at org.antlr.runtime.DFA.noViableAlt(DFA.java:158)
+	at org.antlr.runtime.DFA.predict(DFA.java:116)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.constant(HiveParser_IdentifiersParser.java:6128)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.atomExpression(HiveParser_IdentifiersParser.java:6783)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceFieldExpression(HiveParser_IdentifiersParser.java:6946)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnaryPrefixExpression(HiveParser_IdentifiersParser.java:7331)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceUnarySuffixExpression(HiveParser_IdentifiersParser.java:7391)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseXorExpression(HiveParser_IdentifiersParser.java:7575)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceStarExpression(HiveParser_IdentifiersParser.java:7735)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedencePlusExpression(HiveParser_IdentifiersParser.java:7895)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAmpersandExpression(HiveParser_IdentifiersParser.java:8055)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceBitwiseOrExpression(HiveParser_IdentifiersParser.java:8214)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceEqualExpression(HiveParser_IdentifiersParser.java:9318)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceNotExpression(HiveParser_IdentifiersParser.java:9757)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceAndExpression(HiveParser_IdentifiersParser.java:9876)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.precedenceOrExpression(HiveParser_IdentifiersParser.java:10035)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser.expression(HiveParser_IdentifiersParser.java:6651)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.expression(HiveParser.java:40179)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.searchCondition(HiveParser_FromClauseParser.java:6777)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.whereClause(HiveParser_FromClauseParser.java:6685)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.whereClause(HiveParser.java:40197)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.singleSelectStatement(HiveParser.java:38133)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatement(HiveParser.java:37845)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.regularBody(HiveParser.java:37691)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpressionBody(HiveParser.java:36935)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36811)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1339)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 34:19 cannot recognize input near '''' '2015' '-' in constant
+
+===================================================================
+set START_DATE='2015-07-20';
+set END_DATE='2015-07-20';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-07-20'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 10 17:10:23 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_f24236d8-be82-4b50-9eb9-23ef414fa701_892053151.txt
+OK
+Time taken: 0.608 seconds
+OK
+Time taken: 0.387 seconds
+OK
+Time taken: 0.29 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_65545)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 1/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 5/5	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=yellowhammer, date=2015-07-20}
+	Loading partition {system=wikimedia, date=2015-07-20}
+	Loading partition {system=jumbo, date=2015-07-20}
+	Loading partition {system=wikia, date=2015-07-20}
+	Loading partition {system=visiblemeasures, date=2015-07-20}
+	Loading partition {system=firstdata, date=2015-07-20}
+	Loading partition {system=airpush, date=2015-07-20}
+	Loading partition {system=gopdatatrust, date=2015-07-20}
+	Loading partition {system=owneriq, date=2015-07-20}
+	Loading partition {system=jungledata, date=2015-07-20}
+	Loading partition {system=thasos, date=2015-07-20}
+	Loading partition {system=dlx, date=2015-07-20}
+	Loading partition {system=ms22, date=2015-07-20}
+	Loading partition {system=marketshare, date=2015-07-20}
+	Loading partition {system=motleyfool, date=2015-07-20}
+	Loading partition {system=iqnavigator, date=2015-07-20}
+	Loading partition {system=devicescape2, date=2015-07-20}
+	Loading partition {system=glu, date=2015-07-20}
+	Loading partition {system=playfirst, date=2015-07-20}
+	Loading partition {system=drawbridge2, date=2015-07-20}
+	Loading partition {system=dogfood, date=2015-07-20}
+	Loading partition {system=iheartradio, date=2015-07-20}
+	Loading partition {system=tlg, date=2015-07-20}
+	Loading partition {system=ms3, date=2015-07-20}
+OK
+Time taken: 88.738 seconds
+
+===================================================================
+set START_DATE='2015-07-10';
+set END_DATE='2015-07-10';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date = '2015-07-20'
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 11 17:53:30 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b7c4cd56-ec3f-492e-b28f-6fb78a54d840_2026676043.txt
+OK
+Time taken: 0.612 seconds
+OK
+Time taken: 1.167 seconds
+OK
+Time taken: 0.39 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_71376)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=firstdata, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-20}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=playfirst, date=2015-07-20}
+	Loading partition {system=tlg, date=2015-07-10}
+	Loading partition {system=dlx, date=2015-07-20}
+	Loading partition {system=owneriq, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-20}
+	Loading partition {system=ms3, date=2015-07-20}
+	Loading partition {system=expedia, date=2015-07-10}
+	Loading partition {system=gopdatatrust, date=2015-07-10}
+	Loading partition {system=iqnavigator, date=2015-07-20}
+	Loading partition {system=wikimedia, date=2015-07-20}
+	Loading partition {system=ms3, date=2015-07-10}
+	Loading partition {system=drawbridge2, date=2015-07-10}
+	Loading partition {system=owneriq, date=2015-07-20}
+	Loading partition {system=airpush, date=2015-07-20}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=motleyfool, date=2015-07-20}
+	Loading partition {system=marketshare, date=2015-07-20}
+	Loading partition {system=wikia, date=2015-07-20}
+	Loading partition {system=gopdatatrust, date=2015-07-20}
+	Loading partition {system=ms22, date=2015-07-10}
+	Loading partition {system=airpush, date=2015-07-10}
+	Loading partition {system=jumbo, date=2015-07-20}
+	Loading partition {system=yellowhammer, date=2015-07-20}
+	Loading partition {system=devicescape2, date=2015-07-10}
+	Loading partition {system=tlg, date=2015-07-20}
+	Loading partition {system=motleyfool, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=thasos, date=2015-07-20}
+	Loading partition {system=yellowhammer, date=2015-07-10}
+	Loading partition {system=dlx, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-20}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=devicescape2, date=2015-07-20}
+	Loading partition {system=jungledata, date=2015-07-10}
+	Loading partition {system=playfirst, date=2015-07-10}
+	Loading partition {system=jungledata, date=2015-07-20}
+	Loading partition {system=glu, date=2015-07-20}
+	Loading partition {system=firstdata, date=2015-07-20}
+	Loading partition {system=glu, date=2015-07-10}
+	Loading partition {system=ms22, date=2015-07-20}
+	Loading partition {system=drawbridge2, date=2015-07-20}
+OK
+Time taken: 131.735 seconds
+
+===================================================================
+set START_DATE='2015-07-10';
+set END_DATE='2015-07-10';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    bigint(timestamp/60000)*60000 as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 11 17:58:26 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_79c3a1da-9c16-4728-bce0-cab5ff5027c1_1774021483.txt
+OK
+Time taken: 0.567 seconds
+OK
+Time taken: 0.727 seconds
+OK
+Time taken: 0.258 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_71396)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 1/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=motleyfool, date=2015-07-10}
+	Loading partition {system=ms3, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=firstdata, date=2015-07-10}
+	Loading partition {system=gopdatatrust, date=2015-07-10}
+	Loading partition {system=owneriq, date=2015-07-10}
+	Loading partition {system=devicescape2, date=2015-07-10}
+	Loading partition {system=airpush, date=2015-07-10}
+	Loading partition {system=drawbridge2, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=ms22, date=2015-07-10}
+	Loading partition {system=yellowhammer, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=playfirst, date=2015-07-10}
+	Loading partition {system=jungledata, date=2015-07-10}
+	Loading partition {system=dlx, date=2015-07-10}
+	Loading partition {system=glu, date=2015-07-10}
+	Loading partition {system=tlg, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=expedia, date=2015-07-10}
+OK
+Time taken: 107.774 seconds
+
+===================================================================
+set START_DATE='2015-07-10';
+set END_DATE='2015-07-10';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    bigint,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 11 18:46:24 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_d579982a-7a1a-493d-8f9e-be4471af46da_1284129950.txt
+OK
+Time taken: 0.567 seconds
+OK
+Time taken: 0.672 seconds
+OK
+Time taken: 0.362 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_71567)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=tlg, date=2015-07-10}
+	Loading partition {system=motleyfool, date=2015-07-10}
+	Loading partition {system=jungledata, date=2015-07-10}
+	Loading partition {system=ms22, date=2015-07-10}
+	Loading partition {system=firstdata, date=2015-07-10}
+	Loading partition {system=drawbridge2, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=devicescape2, date=2015-07-10}
+	Loading partition {system=expedia, date=2015-07-10}
+	Loading partition {system=glu, date=2015-07-10}
+	Loading partition {system=playfirst, date=2015-07-10}
+	Loading partition {system=ms3, date=2015-07-10}
+	Loading partition {system=dlx, date=2015-07-10}
+	Loading partition {system=airpush, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=gopdatatrust, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=yellowhammer, date=2015-07-10}
+	Loading partition {system=owneriq, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-10}
+OK
+Time taken: 127.744 seconds
+
+===================================================================
+set START_DATE='2015-07-10';
+set END_DATE='2015-07-10';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 11 19:01:16 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_6ab32782-86ec-46dc-aced-04a67ce15212_1314475.txt
+OK
+Time taken: 0.573 seconds
+OK
+Time taken: 1.607 seconds
+OK
+Time taken: 0.501 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1441039534664_71623)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 0/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 1/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 7/7	Map 5: 2/2	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=ms22, date=2015-07-10}
+	Loading partition {system=tlg, date=2015-07-10}
+	Loading partition {system=gopdatatrust, date=2015-07-10}
+	Loading partition {system=playfirst, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=owneriq, date=2015-07-10}
+	Loading partition {system=yellowhammer, date=2015-07-10}
+	Loading partition {system=jungledata, date=2015-07-10}
+	Loading partition {system=glu, date=2015-07-10}
+	Loading partition {system=drawbridge2, date=2015-07-10}
+	Loading partition {system=expedia, date=2015-07-10}
+	Loading partition {system=airpush, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=devicescape2, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=motleyfool, date=2015-07-10}
+	Loading partition {system=dlx, date=2015-07-10}
+	Loading partition {system=firstdata, date=2015-07-10}
+	Loading partition {system=ms3, date=2015-07-10}
+OK
+Time taken: 100.802 seconds
+
