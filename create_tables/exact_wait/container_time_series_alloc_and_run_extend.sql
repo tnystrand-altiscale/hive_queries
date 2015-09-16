@@ -6,6 +6,7 @@ create table
     container_time_series_alloc_and_run_extend (
 		container_wait_time         bigint,
 		memory                      double,
+		container_size              int,
 		cluster_memory              bigint,
 		minute_start                int,
 		job_id                      string,
@@ -18,6 +19,7 @@ create table
 		principal_uuid              string,
 		user_key                    string,
 		vcores                      double,
+		container_vcores            int,
 		number_apps                 bigint,
 		host                        string,
 		requestedtime               bigint,
@@ -42,6 +44,7 @@ partition(system,date)
 SELECT
 	cts.container_wait_time,
 	cts.memory,
+    cf.memory as container_size,
 	cts.cluster_memory,
 	cts.minute_start,
 	cts.job_id,
@@ -54,6 +57,7 @@ SELECT
 	cts.principal_uuid,
 	cts.user_key,
 	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
 	cts.number_apps,
 	cts.host,
 	cf.requestedtime,
@@ -61,11 +65,13 @@ SELECT
 	cf.acquiredtime,
     cf.runningtime,
 	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
-	if(floor(cf.requestedtime/60000)*60=cts.minute_start,
-		cts.container_wait_time,
-		cts.container_wait_time
-		+floor(cf.requestedtime/1000)
-		-cts.minute_start
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
 	) AS container_wait_time_unagg,
 	cts.system,
 	cts.date

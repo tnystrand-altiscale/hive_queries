@@ -28,35 +28,35 @@ with job_level
         sum(
             case when state='ALLOCATED' 
                     and allocatedtime<bigint(minute_start)*1000
-                    then memory
+                    then container_size
                 when state='ACQUIRED'
                     and acquiredtime<bigint(minute_start)*1000
-                    then memory
+                    then container_size
                 when state='RUNNING'
                     and runningtime<bigint(minute_start)*1000
-                    then memory
+                    then container_size
             else 0 end) as memory_job,
 
         sum(
             case when state='ALLOCATED'
                     and allocatedtime<bigint(minute_start)*1000
-                    then vcores 
+                    then container_vcores 
                 when state='ACQUIRED'
                     and acquiredtime<bigint(minute_start)*1000
-                    then vcores
+                    then container_vcores
                 when state='RUNNING'
                     and runningtime<bigint(minute_start)*1000
-                    then vcores
+                    then container_vcores
             else 0 end) as vcores_job,
         -- What is waiting in the beginning of the minute?
         -- Some REQUESTED are missing from the container_time_series
         -- however this is unimportant since these are only <1 waiting sec.
         sum(if(state='REQUESTED'
                and requestedtime<bigint(minute_start)*1000,
-               memory,0)) as memory_REQ_job,
+               container_size,0)) as memory_REQ_job,
         sum(if(state='REQUESTED'
                and requestedtime<bigint(minute_start)*1000,
-               vcores,0)) as vcores_REQ_job
+               container_vcores,0)) as vcores_REQ_job
     from
         eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
     where
@@ -127,7 +127,13 @@ select
     jl.vcores_job,
     ul.vcores_user,
     ql.vcores_queue,
-    cl.vcores_cluster
+    cl.vcores_cluster,
+    cc.memory_capacity,
+    cc.memory_max_capacity,
+    cc.cluster_memory_capacity,
+    cc.vcore_capacity,
+    cc.vcore_max_capacity,
+    cc.cluster_vcore_capacity
 from
     cluster_level as cl
 join
@@ -135,10 +141,14 @@ join
 on (cl.minute_start=ql.minute_start and cl.system=ql.system)
 join
     user_level as ul
-on (ql.minute_start=ul.minute_start and ql.system=ul.system)
+on (ql.minute_start=ul.minute_start and ql.system=ul.system and ql.queue=ul.queue)
 join
     job_level as jl
-on (ul.minute_start=jl.minute_start and ul.system=jl.system)
-
-
+on (ul.minute_start=jl.minute_start and ul.system=jl.system and ul.queue=jl.queue and ul.user_key=jl.user_key)
+join
+    capacity_combined_avgd_hour as cc
+on (floor(jl.minute_start/3600)=floor(cc.timestamp/3600)
+    and jl.system=cc.queue_system
+    and jl.queue=cc.queue_name
+    and jl.measure_date=cc.queue_date)
 

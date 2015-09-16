@@ -1,0 +1,221 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DAT DUMP FOR: rar_spj_combined.sql
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+===================================================================
+
+===================================================================
+use thomas_test;
+
+drop table if exists rar_spj_combined;
+
+create table as rar_spj_comined
+as select
+    *
+from
+    request_assing_release as rar,
+    state_perminute_job as spj
+where
+   rar.minute_start=spj.minute_start and
+   rar.jobid = spj.job_id and
+   rar.system = spj.system
+
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 15 16:15:23 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists rar_spj_combined;
+
+create table rar_spj_comined
+as select
+    *
+from
+    request_assing_release as rar,
+    state_perminute_job as spj
+where
+   rar.minute_start=spj.minute_start and
+   rar.jobid = spj.job_id and
+   rar.system = spj.system
+
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 15 16:15:43 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists rar_spj_combined;
+
+create table rar_spj_comined
+as select
+    *
+from
+    request_assign_release as rar,
+    state_perminute_job as spj
+where
+   rar.minute_start=spj.minute_start and
+   rar.jobid = spj.job_id and
+   rar.system = spj.system
+
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 15 16:16:01 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists rar_spj_combined;
+
+create table rar_spj_comined
+as select
+    rar.*,
+    spj.*
+from
+    request_assign_release as rar,
+    state_perminute_job as spj
+where
+   rar.minute_start=spj.minute_start and
+   rar.jobid = spj.job_id and
+   rar.system = spj.system
+
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 15 16:16:29 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists rar_spj_combined;
+
+create table rar_spj_comined
+as select
+    rar.minute_start,
+    rar.timestamp, 
+    rar.jobid,
+    rar.memory,
+    rar.action,
+    rar.system,
+    rar.date,
+    spj.*
+from
+    request_assign_release as rar,
+    state_perminute_job as spj
+where
+   rar.minute_start=spj.minute_start and
+   rar.jobid = spj.job_id and
+   rar.system = spj.system
+
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 15 16:20:36 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists rar_spj_combined;
+
+create table rar_spj_comined
+as select
+    rar.minute_start as rar_minute_start,
+    rar.timestamp, 
+    rar.jobid,
+    rar.memory,
+    rar.action,
+    rar.system as rar_system,
+    rar.date as rar_date,
+    spj.*
+from
+    request_assign_release as rar
+full outer join
+    state_perminute_job as spj
+on (
+   rar.minute_start=spj.minute_start and
+   rar.jobid = spj.job_id and
+   rar.system = spj.system
+)
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 15 16:21:36 UTC 2015
+-------------------------------------------------------------------
+
+rar_minute_start	rar.timestamp	rar.jobid	rar.memory	rar.action	rar_system	rar_date	spj.job_id	spj.minute_start	spj.system	spj.user_key	spj.measure_date	spj.queue	spj.memory_req_job	spj.memory_job	spj.memory_user	spj.memory_queue	spj.memory_cluster	spj.vcores_req_job	spj.vcores_job	spj.vcores_user	spj.vcores_queue	spj.vcores_cluster	spj.memory_capacity	spj.memory_max_capacity	spj.cluster_memory_capacity	spj.vcore_capacity	spj.vcore_max_capacity	spj.cluster_vcore_capacity
+
+===================================================================
+use thomas_test;
+
+drop table if exists rar_spj_combined;
+
+create table rar_spj_combined
+as select
+    rar.minute_start as rar_minute_start,
+    rar.timestamp, 
+    rar.jobid,
+    rar.memory,
+    rar.action,
+    rar.system as rar_system,
+    rar.date as rar_date,
+    spj.*
+from
+    request_assign_release as rar
+full outer join
+    state_perminute_job as spj
+on (
+   rar.minute_start=spj.minute_start and
+   rar.jobid = spj.job_id and
+   rar.system = spj.system
+)
+where
+    rar.system='iheartradio'
+    and spj.system='iheartradio'
+-------------------------------------------------------------------
+Starting query at: Tue Sep 15 22:10:37 UTC 2015
+-------------------------------------------------------------------
+
+rar_minute_start	rar.timestamp	rar.jobid	rar.memory	rar.action	rar_system	rar_date	spj.job_id	spj.minute_start	spj.system	spj.user_key	spj.measure_date	spj.queue	spj.memory_req_job	spj.memory_job	spj.memory_user	spj.memory_queue	spj.memory_cluster	spj.vcores_req_job	spj.vcores_job	spj.vcores_user	spj.vcores_queue	spj.vcores_cluster	spj.memory_capacity	spj.memory_max_capacity	spj.cluster_memory_capacity	spj.vcore_capacity	spj.vcore_max_capacity	spj.cluster_vcore_capacity
+
+===================================================================
+use thomas_test;
+
+drop table if exists rar_spj_combined;
+
+create table rar_spj_combined
+as select
+    rar.minute_start as rar_minute_start,
+    rar.timestamp, 
+    rar.jobid,
+    rar.memory,
+    rar.action,
+    rar.system as rar_system,
+    rar.date as rar_date,
+    spj.*
+from
+    request_assign_release as rar
+full outer join
+    state_perminute_job as spj
+on (
+   rar.minute_start=spj.minute_start and
+   rar.jobid = spj.job_id and
+   rar.system = spj.system
+)
+where
+    rar.system='iheartradio'
+    and spj.system='iheartradio'
+    and (rar.minute_start is null or spj.minute_start is null)
+-------------------------------------------------------------------
+Starting query at: Tue Sep 15 23:22:08 UTC 2015
+-------------------------------------------------------------------
+
+rar_minute_start	rar.timestamp	rar.jobid	rar.memory	rar.action	rar_system	rar_date	spj.job_id	spj.minute_start	spj.system	spj.user_key	spj.measure_date	spj.queue	spj.memory_req_job	spj.memory_job	spj.memory_user	spj.memory_queue	spj.memory_cluster	spj.vcores_req_job	spj.vcores_job	spj.vcores_user	spj.vcores_queue	spj.vcores_cluster	spj.memory_capacity	spj.memory_max_capacity	spj.cluster_memory_capacity	spj.vcore_capacity	spj.vcore_max_capacity	spj.cluster_vcore_capacity
+

@@ -1074,3 +1074,497 @@ Loading data to table eric_cluster_metrics_dev_4.container_time_series_alloc_and
 OK
 Time taken: 640.06 seconds
 
+===================================================================
+USE eric_cluster_metrics_dev_4;
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time         bigint,
+		memory                      double,
+		container_size              int,
+		cluster_memory              bigint,
+		minute_start                int,
+		job_id                      string,
+		queue                       string,
+		container_id                string,
+		state                       string,
+		measure_date                string,
+		account                     int,
+		cluster_uuid                string,
+		principal_uuid              string,
+		user_key                    string,
+		vcores                      double,
+		number_apps                 bigint,
+		host                        string,
+		requestedtime               bigint,
+        allocatedtime               bigint,
+		acquiredtime                bigint,
+        runningtime                 bigint,
+		requestedtime_minute        bigint,
+		container_wait_time_unagg   bigint
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	cts.system,
+	cts.date
+FROM
+	container_time_series as cts,
+	container_fact as cf
+WHERE
+	cts.container_id = cf.containerid and
+	cts.system 		 = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Wed Sep 16 20:27:36 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_0d3cf654-2a43-4f80-9213-c6b0fa7fb19a_289927224.txt
+OK
+Time taken: 0.61 seconds
+OK
+Time taken: 0.951 seconds
+OK
+Time taken: 0.28 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_8279)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 1/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 1/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 2/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 3/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 8/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Loading data to table eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend partition (system=null, date=null)
+	Loading partition {system=marketshare, date=2015-07-12}
+	Loading partition {system=dogfood, date=2015-07-09}
+	Loading partition {system=dogfood, date=2015-07-11}
+	Loading partition {system=iheartradio, date=2015-07-11}
+	Loading partition {system=visiblemeasures, date=2015-07-09}
+	Loading partition {system=dogfood, date=2015-07-12}
+	Loading partition {system=iheartradio, date=2015-07-08}
+	Loading partition {system=marketshare, date=2015-07-13}
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-09}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-08}
+	Loading partition {system=iheartradio, date=2015-07-13}
+	Loading partition {system=dogfood, date=2015-07-14}
+	Loading partition {system=marketshare, date=2015-07-14}
+	Loading partition {system=iheartradio, date=2015-07-09}
+	Loading partition {system=visiblemeasures, date=2015-07-12}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-08}
+	Loading partition {system=dogfood, date=2015-07-08}
+	Loading partition {system=visiblemeasures, date=2015-07-14}
+	Loading partition {system=iheartradio, date=2015-07-12}
+	Loading partition {system=marketshare, date=2015-07-11}
+	Loading partition {system=iheartradio, date=2015-07-14}
+	Loading partition {system=visiblemeasures, date=2015-07-11}
+	Loading partition {system=dogfood, date=2015-07-13}
+	Loading partition {system=visiblemeasures, date=2015-07-13}
+OK
+Time taken: 647.363 seconds
+
+===================================================================
+USE eric_cluster_metrics_dev_4;
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time         bigint,
+		memory                      double,
+		container_size              int,
+		cluster_memory              bigint,
+		minute_start                int,
+		job_id                      string,
+		queue                       string,
+		container_id                string,
+		state                       string,
+		measure_date                string,
+		account                     int,
+		cluster_uuid                string,
+		principal_uuid              string,
+		user_key                    string,
+		vcores                      double,
+		container_vcores            int,
+		number_apps                 bigint,
+		host                        string,
+		requestedtime               bigint,
+        allocatedtime               bigint,
+		acquiredtime                bigint,
+        runningtime                 bigint,
+		requestedtime_minute        bigint,
+		container_wait_time_unagg   bigint
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	cts.system,
+	cts.date
+FROM
+	container_time_series as cts,
+	container_fact as cf
+WHERE
+	cts.container_id = cf.containerid and
+	cts.system 		 = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Wed Sep 16 20:42:04 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_fd481ddb-2936-4f0b-93fe-942cd4f83143_1387767647.txt
+OK
+Time taken: 0.603 seconds
+OK
+Time taken: 0.616 seconds
+OK
+Time taken: 0.248 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_8299)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 0/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 1/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 2/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 3/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 8/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 4/4	Reducer 2: 0/1	Reducer 3: 0/1	
