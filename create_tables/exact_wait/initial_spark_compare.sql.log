@@ -1,0 +1,87 @@
+###################################################################
+LOG DUMP FOR: initial_spark_compare.sql
+###################################################################
+===================================================================
+
+===================================================================
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as select
+    jc.*, 
+    jw.memory_waiting,
+    jw.max_mem_capacity_robbed_mbsec,
+    jw.elastic_unfairness_mem_capped_mbsec,
+    jw.competing_job_mem_capped_mbsec
+from
+    job_categories_from_spark as jc,
+    job_wait_reasons_sec_granularity as jw
+-------------------------------------------------------------------
+Starting query at: Thu Sep 17 06:43:50 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_e70a1276-4aeb-447b-a843-84ffb9c5c206_1933655587.txt
+OK
+Time taken: 0.61 seconds
+OK
+Time taken: 0.141 seconds
+Warning: Map Join MAPJOIN[7][bigTable=jc] in task 'Map 1' is a cross product
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_11975)
+
+Map 1: -/-	Map 2: -/-	
+Map 1: 0/1	Map 2: 0/1	
+Trying to shutdown DAG
+Shutting down tez session.
+
+===================================================================
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as select
+    jc.*, 
+    jw.memory_waiting,
+    jw.max_mem_capacity_robbed_mbsec,
+    jw.elastic_unfairness_mem_capped_mbsec,
+    jw.competing_job_mem_capped_mbsec
+from
+    job_categories_from_spark as jc,
+    job_wait_reasons_sec_granularity as jw
+where
+    jc.job_id=jw.job_id
+-------------------------------------------------------------------
+Starting query at: Thu Sep 17 06:44:55 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_14f6863b-822d-4c88-b31f-d4c061cd0605_1821758203.txt
+OK
+Time taken: 0.608 seconds
+OK
+Time taken: 0.144 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_11981)
+
+Map 1: -/-	Map 2: -/-	
+Map 1: 0/1	Map 2: 0/1	
+Map 1: 0/1	Map 2: 0/1	
+Map 1: 0/1	Map 2: 1/1	
+Map 1: 1/1	Map 2: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/initial_spark_compare
+OK
+Time taken: 13.989 seconds
+

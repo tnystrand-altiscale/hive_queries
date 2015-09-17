@@ -1,0 +1,48 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DAT DUMP FOR: initial_spark_compare.sql
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+===================================================================
+
+===================================================================
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as select
+    jc.*, 
+    jw.memory_waiting,
+    jw.max_mem_capacity_robbed_mbsec,
+    jw.elastic_unfairness_mem_capped_mbsec,
+    jw.competing_job_mem_capped_mbsec
+from
+    job_categories_from_spark as jc,
+    job_wait_reasons_sec_granularity as jw
+-------------------------------------------------------------------
+Starting query at: Thu Sep 17 06:43:50 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as select
+    jc.*, 
+    jw.memory_waiting,
+    jw.max_mem_capacity_robbed_mbsec,
+    jw.elastic_unfairness_mem_capped_mbsec,
+    jw.competing_job_mem_capped_mbsec
+from
+    job_categories_from_spark as jc,
+    job_wait_reasons_sec_granularity as jw
+where
+    jc.job_id=jw.job_id
+-------------------------------------------------------------------
+Starting query at: Thu Sep 17 06:44:55 UTC 2015
+-------------------------------------------------------------------
+
+jc.job_id	jc.max_capacity_memory_delayed	jc.user_limit_memory_delayed	jc.elastic_unfariness_memory_delayed	jc.competing_jobs_memory_delayed	jc.total_memory_delayed	jw.memory_waiting	jw.max_mem_capacity_robbed_mbsec	jw.elastic_unfairness_mem_capped_mbsec	jw.competing_job_mem_capped_mbsec
+
