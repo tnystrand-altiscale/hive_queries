@@ -1,16 +1,64 @@
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
 use thomas_test;
 
 drop table if exists initial_spark_compare;
 
 create table initial_spark_compare
-as select
+as with exact_wait_time as (
+    select
+        jobid,
+        system,
+        min(date) as date,
+        min(requestedtime>0) as launchtime,
+        sum(
+            case
+                when (allocatedtime>0 and requestedtime>0) then
+                    (allocatedtime-requestedtime)/1000*memory
+                else
+                    0
+                end
+            ) as total_waittime_exact
+    from
+        eric_backup.container_fact
+    where
+        date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        jobid,
+        system
+    )
+select
+    ew.launchtime,
+    ew.date,
     jc.*, 
-    jw.memory_waiting,
-    jw.max_mem_capacity_robbed_mbsec,
-    jw.elastic_unfairness_mem_capped_mbsec,
-    jw.competing_job_mem_capped_mbsec
+    jws.memory_waiting as memory_waiting_sec,
+    ew.total_waittime_exact,
+    jws.max_mem_capacity_robbed_mbsec,
+    jwn.max_mem_capacity_robbed_mbmin,
+    jwn.memory_sec_convrt,
+    jws.elastic_unfairness_mem_capped_mbsec,
+    jwn.elastic_unfairness_mem_capped_mbmin,
+    jws.competing_job_mem_capped_mbsec,
+    jwn.competing_job_mem_capped_mbmin,
+    jws.max_vcr_capacity_robbed_vcrsec,
+    jwn.max_vcr_capacity_robbed_vcrmin,
+    jws.elastic_unfairness_vcore_capped_vcrsec,
+    jwn.elastic_unfairness_vcore_capped_vcrmin,
+    jws.competing_job_vcore_capped_vcrsec,
+    jwn.competing_job_vcore_capped_vcrmin
 from
-    job_categories_from_spark as jc,
-    job_wait_reasons_sec_granularity as jw
-where
-    jc.job_id=jw.job_id
+    job_categories_from_spark as jc
+join
+    job_wait_reasons_sec_granularity as jws
+on
+    jc.job_id=jws.job_id
+join
+    job_wait_reasons_min_granularity as jwn
+on
+    jws.job_id=jwn.job_id
+join
+    exact_wait_time as ew
+on
+    jwn.job_id=ew.jobid
+

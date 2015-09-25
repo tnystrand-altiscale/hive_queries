@@ -2491,3 +2491,1341 @@ Loading data to table thomas_test.request_assign_release partition (system=null,
 OK
 Time taken: 100.802 seconds
 
+===================================================================
+set START_DATE='2015-07-10';
+set END_DATE='2015-07-10';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        vcores          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    cores as vcores,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    cores as vcores,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 17 22:17:58 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_3be490b2-d487-450e-b38b-dbf915b147fc_2092328636.txt
+OK
+Time taken: 0.61 seconds
+OK
+Time taken: 1.585 seconds
+OK
+Time taken: 0.301 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_14835)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/10	Map 5: 0/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/10	Map 5: 0/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/10	Map 5: 0/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/10	Map 5: 1/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/10	Map 5: 2/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/10	Map 5: 3/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/10	Map 5: 4/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/10	Map 5: 4/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/10	Map 5: 5/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/10	Map 5: 6/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/10	Map 5: 6/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 8/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 9/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 9/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 10/10	Map 5: 7/7	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=playfirst, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=jungledata, date=2015-07-10}
+	Loading partition {system=tlg, date=2015-07-10}
+	Loading partition {system=ms3, date=2015-07-10}
+	Loading partition {system=firstdata, date=2015-07-10}
+	Loading partition {system=ms22, date=2015-07-10}
+	Loading partition {system=drawbridge2, date=2015-07-10}
+	Loading partition {system=gopdatatrust, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=devicescape2, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=airpush, date=2015-07-10}
+	Loading partition {system=glu, date=2015-07-10}
+	Loading partition {system=motleyfool, date=2015-07-10}
+	Loading partition {system=yellowhammer, date=2015-07-10}
+	Loading partition {system=expedia, date=2015-07-10}
+	Loading partition {system=owneriq, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=dlx, date=2015-07-10}
+OK
+Time taken: 108.881 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        vcores          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    cores as vcores,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    cores as vcores,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 18 01:23:23 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_4274c0bf-c73a-4f9f-9187-d3711ce029a4_1126114391.txt
+OK
+Time taken: 0.611 seconds
+OK
+Time taken: 0.636 seconds
+OK
+Time taken: 0.266 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_15318)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 6/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 8/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 9/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 11/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 12/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 13/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 14/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 15/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 16/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 17/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 17/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 17/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 18/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 19/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 20/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 21/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 22/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 23/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 24/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 26/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 27/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 27/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Status: Failed
+Vertex failed, vertexName=Reducer 4, vertexId=vertex_1442298768312_15318_1_00, diagnostics=[Task failed, taskId=task_1442298768312_15318_1_00_000000, diagnostics=[AttemptID:attempt_1442298768312_15318_1_00_000000_0 Info:Error: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to: 100
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.processKeyValues(ReduceRecordProcessor.java:344)
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.run(ReduceRecordProcessor.java:223)
+	at org.apache.hadoop.hive.ql.exec.tez.TezProcessor.run(TezProcessor.java:164)
+	at org.apache.tez.runtime.LogicalIOProcessorRuntimeTask.run(LogicalIOProcessorRuntimeTask.java:307)
+	at org.apache.hadoop.mapred.YarnTezDagChild$5.run(YarnTezDagChild.java:562)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at javax.security.auth.Subject.doAs(Subject.java:415)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1556)
+	at org.apache.hadoop.mapred.YarnTezDagChild.main(YarnTezDagChild.java:551)
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to: 100
+	at org.apache.hadoop.hive.ql.exec.FileSinkOperator.getDynOutPaths(FileSinkOperator.java:747)
+	at org.apache.hadoop.hive.ql.exec.FileSinkOperator.startGroup(FileSinkOperator.java:829)
+	at org.apache.hadoop.hive.ql.exec.Operator.defaultStartGroup(Operator.java:498)
+	at org.apache.hadoop.hive.ql.exec.Operator.startGroup(Operator.java:521)
+	at org.apache.hadoop.hive.ql.exec.Operator.defaultStartGroup(Operator.java:498)
+	at org.apache.hadoop.hive.ql.exec.Operator.startGroup(Operator.java:521)
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.processKeyValues(ReduceRecordProcessor.java:296)
+	... 8 more
+
+Container released by application, AttemptID:attempt_1442298768312_15318_1_00_000000_1 Info:Error: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to: 100
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.processKeyValues(ReduceRecordProcessor.java:344)
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.run(ReduceRecordProcessor.java:223)
+	at org.apache.hadoop.hive.ql.exec.tez.TezProcessor.run(TezProcessor.java:164)
+	at org.apache.tez.runtime.LogicalIOProcessorRuntimeTask.run(LogicalIOProcessorRuntimeTask.java:307)
+	at org.apache.hadoop.mapred.YarnTezDagChild$5.run(YarnTezDagChild.java:562)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at javax.security.auth.Subject.doAs(Subject.java:415)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1556)
+	at org.apache.hadoop.mapred.YarnTezDagChild.main(YarnTezDagChild.java:551)
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to: 100
+	at org.apache.hadoop.hive.ql.exec.FileSinkOperator.getDynOutPaths(FileSinkOperator.java:747)
+	at org.apache.hadoop.hive.ql.exec.FileSinkOperator.startGroup(FileSinkOperator.java:829)
+	at org.apache.hadoop.hive.ql.exec.Operator.defaultStartGroup(Operator.java:498)
+	at org.apache.hadoop.hive.ql.exec.Operator.startGroup(Operator.java:521)
+	at org.apache.hadoop.hive.ql.exec.Operator.defaultStartGroup(Operator.java:498)
+	at org.apache.hadoop.hive.ql.exec.Operator.startGroup(Operator.java:521)
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.processKeyValues(ReduceRecordProcessor.java:296)
+	... 8 more
+
+Container released by application, AttemptID:attempt_1442298768312_15318_1_00_000000_2 Info:Error: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to: 100
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.processKeyValues(ReduceRecordProcessor.java:344)
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.run(ReduceRecordProcessor.java:223)
+	at org.apache.hadoop.hive.ql.exec.tez.TezProcessor.run(TezProcessor.java:164)
+	at org.apache.tez.runtime.LogicalIOProcessorRuntimeTask.run(LogicalIOProcessorRuntimeTask.java:307)
+	at org.apache.hadoop.mapred.YarnTezDagChild$5.run(YarnTezDagChild.java:562)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at javax.security.auth.Subject.doAs(Subject.java:415)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1556)
+	at org.apache.hadoop.mapred.YarnTezDagChild.main(YarnTezDagChild.java:551)
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to: 100
+	at org.apache.hadoop.hive.ql.exec.FileSinkOperator.getDynOutPaths(FileSinkOperator.java:747)
+	at org.apache.hadoop.hive.ql.exec.FileSinkOperator.startGroup(FileSinkOperator.java:829)
+	at org.apache.hadoop.hive.ql.exec.Operator.defaultStartGroup(Operator.java:498)
+	at org.apache.hadoop.hive.ql.exec.Operator.startGroup(Operator.java:521)
+	at org.apache.hadoop.hive.ql.exec.Operator.defaultStartGroup(Operator.java:498)
+	at org.apache.hadoop.hive.ql.exec.Operator.startGroup(Operator.java:521)
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.processKeyValues(ReduceRecordProcessor.java:296)
+	... 8 more
+
+Container released by application, AttemptID:attempt_1442298768312_15318_1_00_000000_3 Info:Error: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to: 100
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.processKeyValues(ReduceRecordProcessor.java:344)
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.run(ReduceRecordProcessor.java:223)
+	at org.apache.hadoop.hive.ql.exec.tez.TezProcessor.run(TezProcessor.java:164)
+	at org.apache.tez.runtime.LogicalIOProcessorRuntimeTask.run(LogicalIOProcessorRuntimeTask.java:307)
+	at org.apache.hadoop.mapred.YarnTezDagChild$5.run(YarnTezDagChild.java:562)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at javax.security.auth.Subject.doAs(Subject.java:415)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1556)
+	at org.apache.hadoop.mapred.YarnTezDagChild.main(YarnTezDagChild.java:551)
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to: 100
+	at org.apache.hadoop.hive.ql.exec.FileSinkOperator.getDynOutPaths(FileSinkOperator.java:747)
+	at org.apache.hadoop.hive.ql.exec.FileSinkOperator.startGroup(FileSinkOperator.java:829)
+	at org.apache.hadoop.hive.ql.exec.Operator.defaultStartGroup(Operator.java:498)
+	at org.apache.hadoop.hive.ql.exec.Operator.startGroup(Operator.java:521)
+	at org.apache.hadoop.hive.ql.exec.Operator.defaultStartGroup(Operator.java:498)
+	at org.apache.hadoop.hive.ql.exec.Operator.startGroup(Operator.java:521)
+	at org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor.processKeyValues(ReduceRecordProcessor.java:296)
+	... 8 more
+], Vertex failed as one or more tasks failed. failedTasks:1]
+DAG failed due to vertex failure. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        vcores          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    cores as vcores,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    cores as vcores,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 18 05:13:01 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b088b5f1-9d4d-4c59-955a-7f2baac895fa_1470112990.txt
+OK
+Time taken: 0.603 seconds
+OK
+Time taken: 0.451 seconds
+OK
+Time taken: 0.458 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_17495)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 4/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 8/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 9/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 11/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 11/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 12/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 13/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 14/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 15/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 16/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 17/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 19/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 21/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 22/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 23/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 25/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 25/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 26/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 26/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 27/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=playfirst, date=2015-07-11}
+	Loading partition {system=drawbridge2, date=2015-07-13}
+	Loading partition {system=dlx, date=2015-07-14}
+	Loading partition {system=jumbo, date=2015-07-08}
+	Loading partition {system=ms22, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-13}
+	Loading partition {system=yellowhammer, date=2015-07-10}
+	Loading partition {system=wikimedia, date=2015-07-09}
+	Loading partition {system=owneriq, date=2015-07-10}
+	Loading partition {system=airpush, date=2015-07-10}
+	Loading partition {system=playfirst, date=2015-07-12}
+	Loading partition {system=yellowhammer, date=2015-07-13}
+	Loading partition {system=drawbridge2, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-14}
+	Loading partition {system=yellowhammer, date=2015-07-08}
+	Loading partition {system=owneriq, date=2015-07-11}
+	Loading partition {system=glu, date=2015-07-11}
+	Loading partition {system=visiblemeasures, date=2015-07-14}
+	Loading partition {system=dogfood, date=2015-07-09}
+	Loading partition {system=wikimedia, date=2015-07-14}
+	Loading partition {system=dogfood, date=2015-07-11}
+	Loading partition {system=dlx, date=2015-07-11}
+	Loading partition {system=jungledata, date=2015-07-09}
+	Loading partition {system=motleyfool, date=2015-07-09}
+	Loading partition {system=jungledata, date=2015-07-14}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=expedia, date=2015-07-11}
+	Loading partition {system=jungledata, date=2015-07-10}
+	Loading partition {system=tlg, date=2015-07-09}
+	Loading partition {system=drawbridge2, date=2015-07-08}
+	Loading partition {system=wikia, date=2015-07-09}
+	Loading partition {system=firstdata, date=2015-07-13}
+	Loading partition {system=wikia, date=2015-07-08}
+	Loading partition {system=expedia, date=2015-07-10}
+	Loading partition {system=owneriq, date=2015-07-14}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=ms3, date=2015-07-10}
+	Loading partition {system=playfirst, date=2015-07-13}
+	Loading partition {system=owneriq, date=2015-07-13}
+	Loading partition {system=dogfood, date=2015-07-13}
+	Loading partition {system=tlg, date=2015-07-14}
+	Loading partition {system=ms22, date=2015-07-09}
+	Loading partition {system=devicescape2, date=2015-07-11}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=tlg, date=2015-07-08}
+	Loading partition {system=ms3, date=2015-07-11}
+	Loading partition {system=motleyfool, date=2015-07-12}
+	Loading partition {system=iheartradio, date=2015-07-14}
+	Loading partition {system=drawbridge2, date=2015-07-09}
+	Loading partition {system=ia, date=2015-07-14}
+	Loading partition {system=drawbridge2, date=2015-07-11}
+	Loading partition {system=devicescape2, date=2015-07-09}
+	Loading partition {system=marketshare, date=2015-07-08}
+	Loading partition {system=yume, date=2015-07-08}
+	Loading partition {system=playfirst, date=2015-07-14}
+	Loading partition {system=gopdatatrust, date=2015-07-12}
+	Loading partition {system=owneriq, date=2015-07-12}
+	Loading partition {system=glu, date=2015-07-09}
+	Loading partition {system=visiblemeasures, date=2015-07-09}
+	Loading partition {system=airpush, date=2015-07-14}
+	Loading partition {system=motleyfool, date=2015-07-14}
+	Loading partition {system=tlg, date=2015-07-10}
+	Loading partition {system=omegapoint, date=2015-07-09}
+	Loading partition {system=iheartradio, date=2015-07-11}
+	Loading partition {system=gopdatatrust, date=2015-07-11}
+	Loading partition {system=jungledata, date=2015-07-11}
+	Loading partition {system=yellowhammer, date=2015-07-14}
+	Loading partition {system=airpush, date=2015-07-13}
+	Loading partition {system=dogfood, date=2015-07-08}
+	Loading partition {system=motleyfool, date=2015-07-11}
+	Loading partition {system=iheartradio, date=2015-07-12}
+	Loading partition {system=dlx, date=2015-07-12}
+	Loading partition {system=motleyfool, date=2015-07-08}
+	Loading partition {system=airpush, date=2015-07-08}
+	Loading partition {system=gopdatatrust, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-13}
+	Loading partition {system=playfirst, date=2015-07-09}
+	Loading partition {system=thasos, date=2015-07-08}
+	Loading partition {system=airpush, date=2015-07-12}
+	Loading partition {system=glu, date=2015-07-14}
+	Loading partition {system=drawbridge2, date=2015-07-12}
+	Loading partition {system=drawbridge2, date=2015-07-14}
+	Loading partition {system=yellowhammer, date=2015-07-09}
+	Loading partition {system=airpush, date=2015-07-11}
+	Loading partition {system=firstdata, date=2015-07-12}
+	Loading partition {system=ms3, date=2015-07-12}
+	Loading partition {system=tlg, date=2015-07-13}
+	Loading partition {system=dogfood, date=2015-07-12}
+	Loading partition {system=firstdata, date=2015-07-10}
+	Loading partition {system=devicescape2, date=2015-07-14}
+	Loading partition {system=iheartradio, date=2015-07-08}
+	Loading partition {system=iheartradio, date=2015-07-13}
+	Loading partition {system=visiblemeasures, date=2015-07-12}
+	Loading partition {system=playfirst, date=2015-07-10}
+	Loading partition {system=bd1, date=2015-07-13}
+	Loading partition {system=dlx, date=2015-07-13}
+	Loading partition {system=jungledata, date=2015-07-12}
+	Loading partition {system=iheartradio, date=2015-07-09}
+	Loading partition {system=marketshare, date=2015-07-11}
+	Loading partition {system=motleyfool, date=2015-07-10}
+	Loading partition {system=ms22, date=2015-07-12}
+	Loading partition {system=ms22, date=2015-07-14}
+	Loading partition {system=devicescape2, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=wikimedia, date=2015-07-13}
+	Loading partition {system=glu, date=2015-07-12}
+	Loading partition {system=dlx, date=2015-07-10}
+	Loading partition {system=firstdata, date=2015-07-08}
+	Loading partition {system=yellowhammer, date=2015-07-12}
+	Loading partition {system=playfirst, date=2015-07-08}
+	Loading partition {system=jungledata, date=2015-07-08}
+	Loading partition {system=glu, date=2015-07-08}
+	Loading partition {system=marketshare, date=2015-07-09}
+	Loading partition {system=glu, date=2015-07-10}
+	Loading partition {system=wikimedia, date=2015-07-08}
+	Loading partition {system=devicescape2, date=2015-07-12}
+	Loading partition {system=marketshare, date=2015-07-14}
+	Loading partition {system=gopdatatrust, date=2015-07-13}
+	Loading partition {system=ms3, date=2015-07-08}
+	Loading partition {system=ms3, date=2015-07-13}
+	Loading partition {system=devicescape2, date=2015-07-08}
+	Loading partition {system=glu, date=2015-07-13}
+	Loading partition {system=marketshare, date=2015-07-12}
+	Loading partition {system=motleyfool, date=2015-07-13}
+	Loading partition {system=ms22, date=2015-07-13}
+	Loading partition {system=ms3, date=2015-07-09}
+	Loading partition {system=ms22, date=2015-07-11}
+	Loading partition {system=ms22, date=2015-07-08}
+	Loading partition {system=visiblemeasures, date=2015-07-11}
+	Loading partition {system=yellowhammer, date=2015-07-11}
+	Loading partition {system=airpush, date=2015-07-09}
+	Loading partition {system=ms3, date=2015-07-14}
+	Loading partition {system=jungledata, date=2015-07-13}
+	Loading partition {system=dlx, date=2015-07-08}
+	Loading partition {system=visiblemeasures, date=2015-07-08}
+	Loading partition {system=devicescape2, date=2015-07-13}
+	Loading partition {system=dlx, date=2015-07-09}
+OK
+Time taken: 470.214 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        vcores          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory*num_containers as memory,
+    cores as vcores,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    cores as vcores,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Sat Sep 19 16:40:16 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_0cbdcc01-0f79-488c-8f03-0dd1de28a47b_1010341128.txt
+OK
+Time taken: 0.611 seconds
+OK
+Time taken: 1.262 seconds
+OK
+Time taken: 0.236 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_24912)
+
+Map 1: -/-	Map 5: -/-	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 0/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 1/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 2/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 3/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 5/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 7/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 8/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 10/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 11/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 12/28	Map 5: 0/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 12/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 13/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 15/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 16/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 17/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 19/28	Map 5: 1/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 20/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 21/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 22/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 23/28	Map 5: 2/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 23/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 24/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 25/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 25/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 25/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 26/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 27/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 27/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 0/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 0/1	
+Map 1: 28/28	Map 5: 3/3	Reducer 2: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Loading data to table thomas_test.request_assign_release partition (system=null, date=null)
+	Loading partition {system=wikimedia, date=2015-07-14}
+	Loading partition {system=yellowhammer, date=2015-07-13}
+	Loading partition {system=expedia, date=2015-07-10}
+	Loading partition {system=jungledata, date=2015-07-09}
+	Loading partition {system=bd1, date=2015-07-13}
+	Loading partition {system=devicescape2, date=2015-07-12}
+	Loading partition {system=motleyfool, date=2015-07-13}
+	Loading partition {system=drawbridge2, date=2015-07-09}
+	Loading partition {system=visiblemeasures, date=2015-07-13}
+	Loading partition {system=glu, date=2015-07-11}
+	Loading partition {system=dogfood, date=2015-07-12}
+	Loading partition {system=ms3, date=2015-07-12}
+	Loading partition {system=glu, date=2015-07-10}
+	Loading partition {system=devicescape2, date=2015-07-14}
+	Loading partition {system=ms22, date=2015-07-12}
+	Loading partition {system=devicescape2, date=2015-07-13}
+	Loading partition {system=playfirst, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=dlx, date=2015-07-13}
+	Loading partition {system=yellowhammer, date=2015-07-11}
+	Loading partition {system=glu, date=2015-07-08}
+	Loading partition {system=iheartradio, date=2015-07-11}
+	Loading partition {system=ms22, date=2015-07-09}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-14}
+	Loading partition {system=tlg, date=2015-07-14}
+	Loading partition {system=glu, date=2015-07-13}
+	Loading partition {system=jungledata, date=2015-07-10}
+	Loading partition {system=airpush, date=2015-07-12}
+	Loading partition {system=jungledata, date=2015-07-11}
+	Loading partition {system=iheartradio, date=2015-07-12}
+	Loading partition {system=drawbridge2, date=2015-07-13}
+	Loading partition {system=motleyfool, date=2015-07-08}
+	Loading partition {system=airpush, date=2015-07-14}
+	Loading partition {system=airpush, date=2015-07-13}
+	Loading partition {system=firstdata, date=2015-07-12}
+	Loading partition {system=dlx, date=2015-07-14}
+	Loading partition {system=owneriq, date=2015-07-12}
+	Loading partition {system=firstdata, date=2015-07-13}
+	Loading partition {system=motleyfool, date=2015-07-14}
+	Loading partition {system=dlx, date=2015-07-09}
+	Loading partition {system=dogfood, date=2015-07-09}
+	Loading partition {system=gopdatatrust, date=2015-07-12}
+	Loading partition {system=tlg, date=2015-07-08}
+	Loading partition {system=owneriq, date=2015-07-11}
+	Loading partition {system=gopdatatrust, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-08}
+	Loading partition {system=ms22, date=2015-07-08}
+	Loading partition {system=drawbridge2, date=2015-07-12}
+	Loading partition {system=ms3, date=2015-07-13}
+	Loading partition {system=marketshare, date=2015-07-13}
+	Loading partition {system=wikimedia, date=2015-07-13}
+	Loading partition {system=tlg, date=2015-07-10}
+	Loading partition {system=devicescape2, date=2015-07-10}
+	Loading partition {system=omegapoint, date=2015-07-09}
+	Loading partition {system=gopdatatrust, date=2015-07-11}
+	Loading partition {system=jungledata, date=2015-07-14}
+	Loading partition {system=glu, date=2015-07-12}
+	Loading partition {system=airpush, date=2015-07-11}
+	Loading partition {system=playfirst, date=2015-07-08}
+	Loading partition {system=drawbridge2, date=2015-07-11}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=yume, date=2015-07-08}
+	Loading partition {system=visiblemeasures, date=2015-07-12}
+	Loading partition {system=ms3, date=2015-07-08}
+	Loading partition {system=drawbridge2, date=2015-07-14}
+	Loading partition {system=yellowhammer, date=2015-07-12}
+	Loading partition {system=dogfood, date=2015-07-08}
+	Loading partition {system=ms3, date=2015-07-09}
+	Loading partition {system=gopdatatrust, date=2015-07-13}
+	Loading partition {system=firstdata, date=2015-07-08}
+	Loading partition {system=devicescape2, date=2015-07-11}
+	Loading partition {system=jungledata, date=2015-07-12}
+	Loading partition {system=visiblemeasures, date=2015-07-14}
+	Loading partition {system=owneriq, date=2015-07-13}
+	Loading partition {system=ms22, date=2015-07-10}
+	Loading partition {system=drawbridge2, date=2015-07-08}
+	Loading partition {system=ia, date=2015-07-14}
+	Loading partition {system=jumbo, date=2015-07-08}
+	Loading partition {system=expedia, date=2015-07-11}
+	Loading partition {system=dlx, date=2015-07-10}
+	Loading partition {system=ms3, date=2015-07-14}
+	Loading partition {system=dogfood, date=2015-07-13}
+	Loading partition {system=wikia, date=2015-07-09}
+	Loading partition {system=dlx, date=2015-07-11}
+	Loading partition {system=playfirst, date=2015-07-09}
+	Loading partition {system=airpush, date=2015-07-08}
+	Loading partition {system=airpush, date=2015-07-09}
+	Loading partition {system=dogfood, date=2015-07-14}
+	Loading partition {system=playfirst, date=2015-07-12}
+	Loading partition {system=iheartradio, date=2015-07-08}
+	Loading partition {system=iheartradio, date=2015-07-13}
+	Loading partition {system=owneriq, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-12}
+	Loading partition {system=ms22, date=2015-07-13}
+	Loading partition {system=yellowhammer, date=2015-07-08}
+	Loading partition {system=jungledata, date=2015-07-13}
+	Loading partition {system=devicescape2, date=2015-07-08}
+	Loading partition {system=wikimedia, date=2015-07-08}
+	Loading partition {system=glu, date=2015-07-09}
+	Loading partition {system=playfirst, date=2015-07-14}
+	Loading partition {system=drawbridge2, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-08}
+	Loading partition {system=motleyfool, date=2015-07-11}
+	Loading partition {system=owneriq, date=2015-07-14}
+	Loading partition {system=tlg, date=2015-07-09}
+	Loading partition {system=yellowhammer, date=2015-07-10}
+	Loading partition {system=firstdata, date=2015-07-10}
+	Loading partition {system=ms22, date=2015-07-14}
+	Loading partition {system=wikimedia, date=2015-07-09}
+	Loading partition {system=yellowhammer, date=2015-07-14}
+	Loading partition {system=dogfood, date=2015-07-11}
+	Loading partition {system=visiblemeasures, date=2015-07-09}
+	Loading partition {system=ms3, date=2015-07-11}
+	Loading partition {system=playfirst, date=2015-07-11}
+	Loading partition {system=marketshare, date=2015-07-09}
+	Loading partition {system=airpush, date=2015-07-10}
+	Loading partition {system=motleyfool, date=2015-07-09}
+	Loading partition {system=marketshare, date=2015-07-11}
+	Loading partition {system=thasos, date=2015-07-08}
+	Loading partition {system=devicescape2, date=2015-07-09}
+	Loading partition {system=glu, date=2015-07-14}
+	Loading partition {system=visiblemeasures, date=2015-07-11}
+	Loading partition {system=jungledata, date=2015-07-08}
+	Loading partition {system=ms3, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-09}
+	Loading partition {system=motleyfool, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-14}
+	Loading partition {system=dlx, date=2015-07-08}
+	Loading partition {system=motleyfool, date=2015-07-12}
+	Loading partition {system=wikia, date=2015-07-08}
+	Loading partition {system=dlx, date=2015-07-12}
+	Loading partition {system=yellowhammer, date=2015-07-09}
+	Loading partition {system=playfirst, date=2015-07-13}
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=ms22, date=2015-07-11}
+	Loading partition {system=tlg, date=2015-07-13}
+OK
+Time taken: 440.316 seconds
+

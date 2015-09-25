@@ -1775,3 +1775,415 @@ Loading data to table eric_cluster_metrics_dev_4.container_time_series_alloc_and
 OK
 Time taken: 643.245 seconds
 
+===================================================================
+USE eric_cluster_metrics_dev_4;
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time         bigint,
+		memory                      double,
+		container_size              int,
+		cluster_memory              bigint,
+		minute_start                int,
+		job_id                      string,
+		queue                       string,
+		container_id                string,
+		state                       string,
+		measure_date                string,
+		account                     int,
+		cluster_uuid                string,
+		principal_uuid              string,
+		user_key                    string,
+		vcores                      double,
+		container_vcores            int,
+		number_apps                 bigint,
+		host                        string,
+		requestedtime               bigint,
+        allocatedtime               bigint,
+		acquiredtime                bigint,
+        runningtime                 bigint,
+        reservedtime                bigint,
+		requestedtime_minute        bigint,
+		container_wait_time_unagg   bigint
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	cts.system,
+	cts.date
+FROM
+	container_time_series as cts,
+	container_fact as cf
+WHERE
+	cts.container_id = cf.containerid and
+	cts.system 		 = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 06:12:24 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_c39451e2-30ec-4bf4-a3cf-6f782f5a12e8_180242467.txt
+OK
+Time taken: 0.644 seconds
+OK
+Time taken: 1.038 seconds
+OK
+Time taken: 0.422 seconds
+FAILED: SemanticException [Error 10002]: Line 44:5 Invalid column reference 'container_id'
+
+===================================================================
+USE eric_cluster_metrics_dev_4;
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time         bigint,
+		memory                      double,
+		container_size              int,
+		cluster_memory              bigint,
+		minute_start                int,
+		job_id                      string,
+		queue                       string,
+		container_id                string,
+		state                       string,
+		measure_date                string,
+		account                     int,
+		cluster_uuid                string,
+		principal_uuid              string,
+		user_key                    string,
+		vcores                      double,
+		container_vcores            int,
+		number_apps                 bigint,
+		host                        string,
+		requestedtime               bigint,
+        allocatedtime               bigint,
+		acquiredtime                bigint,
+        runningtime                 bigint,
+        reservedtime                bigint,
+		requestedtime_minute        bigint,
+		container_wait_time_unagg   bigint
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.containerid as container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	cts.system,
+	cts.date
+FROM
+	container_time_series as cts,
+	container_fact as cf
+WHERE
+	cts.containerid = cf.containerid and
+	cts.system 		 = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 06:15:11 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_6a9d6189-71a2-4ac9-9d16-c3ffa3134272_1156357950.txt
+OK
+Time taken: 0.574 seconds
+OK
+Time taken: 0.451 seconds
+OK
+Time taken: 0.373 seconds
+FAILED: NullPointerException null
+
+===================================================================
+USE eric_cluster_metrics_dev_4;
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time         bigint,
+		memory                      double,
+		container_size              int,
+		cluster_memory              bigint,
+		minute_start                int,
+		job_id                      string,
+		queue                       string,
+		container_id                string,
+		state                       string,
+		measure_date                string,
+		account                     int,
+		cluster_uuid                string,
+		principal_uuid              string,
+		user_key                    string,
+		vcores                      double,
+		container_vcores            int,
+		number_apps                 bigint,
+		host                        string,
+		requestedtime               bigint,
+        allocatedtime               bigint,
+		acquiredtime                bigint,
+        runningtime                 bigint,
+        reservedtime                bigint,
+		requestedtime_minute        bigint,
+		container_wait_time_unagg   bigint
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.containerid as container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	cts.system,
+	cts.date
+FROM
+	container_time_series as cts,
+	container_fact as cf
+WHERE
+	cts.containerid = cf.containerid and
+	cts.system 		= cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 06:16:23 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_734d0efc-4196-4047-b96c-56ff79edf574_1815209376.txt
+OK
+Time taken: 0.566 seconds
+OK
+Time taken: 0.533 seconds
+OK
+Time taken: 0.226 seconds
+FAILED: NullPointerException null
+
+===================================================================
+USE eric_cluster_metrics_dev_4;
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time         bigint,
+		memory                      double,
+		container_size              int,
+		cluster_memory              bigint,
+		minute_start                int,
+		job_id                      string,
+		queue                       string,
+		container_id                string,
+		state                       string,
+		measure_date                string,
+		account                     int,
+		cluster_uuid                string,
+		principal_uuid              string,
+		user_key                    string,
+		vcores                      double,
+		container_vcores            int,
+		number_apps                 bigint,
+		host                        string,
+		requestedtime               bigint,
+        allocatedtime               bigint,
+		acquiredtime                bigint,
+        runningtime                 bigint,
+        reservedtime                bigint,
+		requestedtime_minute        bigint,
+		container_wait_time_unagg   bigint
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.containerid as container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	cts.system,
+	cts.date
+FROM
+	container_time_series as cts,
+	container_fact as cf
+WHERE
+	cts.containerid = cf.containerid and
+	cts.system 		= cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 16:12:15 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_a4249a6c-dc4c-4b6f-9671-086172992d40_141016750.txt
+OK
+Time taken: 0.562 seconds
+OK
+Time taken: 1.113 seconds
+OK
+Time taken: 0.34 seconds
+FAILED: NullPointerException null
+

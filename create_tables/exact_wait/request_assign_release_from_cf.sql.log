@@ -1,0 +1,2959 @@
+###################################################################
+LOG DUMP FOR: request_assign_release_from_cf.sql
+###################################################################
+===================================================================
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select
+    int(bigint(requestedtime/60000)*60) as minute_start,
+    requestedtime as timestamp,
+    jobid,
+    memory,
+    vcores,
+    0 as action,
+    system,
+    date
+from
+    container_fact
+where
+    requestedtime>0
+    and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+union all
+
+select
+    int(bigint(allocatedtime/60000)*60) as minute_start,
+    allocatedtime as timestamp,
+    jobid,
+    memory,
+    vcores,
+    1 as action,
+    system,
+    date
+from
+    container_fact
+where
+    allocatedtime>0
+    and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+union all
+
+select
+    int(bigint((completedtime+killedtime)/60000)*60) as minute_start,
+    completedtime+killedtime as timestamp,
+    jobid,
+    memory,
+    vcores,
+    2 as action,
+    system,
+    date
+from
+    container_fact
+where
+    (completedtime>0 or killedtime>0)
+    and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+-------------------------------------------------------------------
+Starting query at: Mon Sep 21 21:46:06 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_caa2296d-eff2-4347-8795-6b4a5915f689_595360768.txt
+OK
+Time taken: 0.628 seconds
+OK
+Time taken: 0.133 seconds
+FAILED: SemanticException [Error 10001]: Line 15:4 Table not found 'container_fact'
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select
+    int(bigint(requestedtime/60000)*60) as minute_start,
+    requestedtime as timestamp,
+    jobid,
+    memory,
+    vcores,
+    0 as action,
+    system,
+    date
+from
+    cluster_metrics_prod_1.container_fact
+where
+    requestedtime>0
+    and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+union all
+
+select
+    int(bigint(allocatedtime/60000)*60) as minute_start,
+    allocatedtime as timestamp,
+    jobid,
+    memory,
+    vcores,
+    1 as action,
+    system,
+    date
+from
+    cluster_metrics_prod_1.container_fact
+where
+    allocatedtime>0
+    and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+union all
+
+select
+    int(bigint((completedtime+killedtime)/60000)*60) as minute_start,
+    completedtime+killedtime as timestamp,
+    jobid,
+    memory,
+    vcores,
+    2 as action,
+    system,
+    date
+from
+    cluster_metrics_prod_1.container_fact
+where
+    (completedtime>0 or killedtime>0)
+    and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+-------------------------------------------------------------------
+Starting query at: Mon Sep 21 21:46:54 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_cf2bd03a-b6ef-42ef-9028-c136be42f411_1017443571.txt
+OK
+Time taken: 0.581 seconds
+OK
+Time taken: 0.159 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_36608)
+
+Map 1: -/-	Map 3: -/-	Map 4: -/-	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 0/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 1/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 1/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 2/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 3/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 3/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 4/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 5/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 6/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 7/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 7/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 8/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 9/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 10/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 11/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 11/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 0/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 1/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 2/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 3/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 4/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 4/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 5/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 6/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 7/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 8/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 9/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 10/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 11/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 0/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 1/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 2/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 3/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 4/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 5/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 5/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 6/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 7/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 8/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 10/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 11/12	Map 3: 12/12	Map 4: 12/12	
+Map 1: 12/12	Map 3: 12/12	Map 4: 12/12	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 110.189 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    *
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime)/60000)*60) as minute_start,
+        completedtime+killedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        (completedtime>0 or killedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Mon Sep 21 21:54:00 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_6a935fd5-0da1-41ad-9643-919ddeb1d91c_1520668076.txt
+OK
+Time taken: 0.625 seconds
+OK
+Time taken: 0.871 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_36621)
+
+Map 1: -/-	Map 4: -/-	Map 5: -/-	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 0/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 1/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 1/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 1/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 1/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 2/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 2/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 2/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 2/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 3/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 4/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 5/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 5/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 6/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 7/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 8/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 9/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 10/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 11/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 0/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 1/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 2/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 3/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 4/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 5/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 5/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 6/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 7/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 8/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 9/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 10/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 11/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 11/12	Reducer 3: 0/1	
+Map 1: 0/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 1/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 2/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 4/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 5/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 6/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 7/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 8/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 9/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 10/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 11/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 0/1	
+Map 1: 12/12	Map 4: 12/12	Map 5: 12/12	Reducer 3: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 236.75 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime)/60000)*60) as minute_start,
+        completedtime+killedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        (completedtime>0 or killedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Mon Sep 21 22:22:20 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b0bf8615-aa7f-4810-b668-5f141ad17b82_530270173.txt
+OK
+Time taken: 0.578 seconds
+OK
+Time taken: 0.382 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_36654)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 2/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 5/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 6/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 8/12	Map 5: 0/12	Map 6: 1/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 9/12	Map 5: 0/12	Map 6: 1/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 9/12	Map 5: 0/12	Map 6: 2/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 11/12	Map 5: 0/12	Map 6: 2/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 11/12	Map 5: 0/12	Map 6: 3/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 0/12	Map 6: 4/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 0/12	Map 6: 5/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 0/12	Map 6: 6/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 0/12	Map 6: 7/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 0/12	Map 6: 8/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 0/12	Map 6: 9/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 0/12	Map 6: 11/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 0/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 1/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 2/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 3/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 6/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 7/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 8/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 9/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 10/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 11/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 228.014 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        (completedtime>0 or killedtime>0 or exiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Mon Sep 21 22:33:24 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_4307f0c2-f77e-45c4-8fef-bf84316dd059_1490679231.txt
+OK
+Time taken: 0.58 seconds
+OK
+Time taken: 0.393 seconds
+FAILED: SemanticException [Error 10004]: Line 61:44 Invalid table alias or column reference 'exiredtime': (possible column names are: jobid, containerid, requestedtime, reservedtime, allocatedtime, acquiredtime, expiredtime, runningtime, killedtime, releasedtime, completedtime, memory, vcores, queue, host, priority, account, cluster_uuid, principal_uuid, user_key, clustermemory, numberapps, system, date)
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Mon Sep 21 22:35:05 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_272a1450-e6bb-4863-a48c-c0cb45e6126e_755339033.txt
+OK
+Time taken: 0.616 seconds
+OK
+Time taken: 0.144 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_36678)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 1/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 2/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 2/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 2/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 2/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 3/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 4/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 5/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 6/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 7/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 8/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 9/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 9/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 10/12	Map 6: 1/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 11/12	Map 6: 2/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 11/12	Map 6: 3/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 11/12	Map 6: 4/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 4/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 5/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 6/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 7/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 8/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 9/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 10/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 11/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 2/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 5/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 6/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 8/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 9/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 10/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 11/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 231.883 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Tue Sep 22 05:25:35 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_05ab846f-f41c-4190-baee-8710def2595b_1239079548.txt
+OK
+Time taken: 0.567 seconds
+OK
+Time taken: 0.431 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_39872)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 1/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 2/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 3/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 3/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 4/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 5/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 6/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 7/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 8/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 9/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 0/12	Map 6: 10/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 1/12	Map 6: 10/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 1/12	Map 6: 11/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 1/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 3/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/12	Map 5: 5/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/12	Map 5: 6/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/12	Map 5: 7/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/12	Map 5: 8/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/12	Map 5: 8/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/12	Map 5: 9/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/12	Map 5: 11/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 5/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 6/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 8/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 9/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 10/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 11/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 12/12	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 282.888 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        cluster_metrics_prod_1.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 17:42:25 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_64aa0c13-31a5-46a3-832e-44b46e6e1cf8_1956504729.txt
+OK
+Time taken: 0.609 seconds
+OK
+Time taken: 0.685 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_53603)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: -/-	Map 6: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/12	Map 6: 0/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 0/12	Map 6: 1/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 0/12	Map 6: 2/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 2/4	Map 5: 0/12	Map 6: 2/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/4	Map 5: 0/12	Map 6: 2/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/4	Map 5: 0/12	Map 6: 3/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/4	Map 5: 0/12	Map 6: 5/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 0/12	Map 6: 5/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 0/12	Map 6: 7/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 0/12	Map 6: 7/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 1/12	Map 6: 7/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 2/12	Map 6: 7/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 2/12	Map 6: 8/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/12	Map 6: 8/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/12	Map 6: 9/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/12	Map 6: 10/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/12	Map 6: 11/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 5/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 6/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 7/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 8/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 10/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 11/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 12/12	Map 6: 12/12	Reducer 3: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 140.346 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 18:14:04 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_af4227ab-f517-4bca-9b9b-0d42fdd47963_1199986552.txt
+OK
+Time taken: 0.608 seconds
+OK
+Time taken: 0.445 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_53696)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 1/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 1/4	Map 6: 1/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 1/4	Map 6: 2/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 1/4	Map 6: 3/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 1/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 2/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 3/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 2/4	Map 5: 3/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 2/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 78.79 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set WAIT_CUTOFF = 30;
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        if(requestedtime>0,requestedtime,allocatedtime) as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        allocatedtime>0 or requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 21:45:15 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_a7803dc2-fe55-4fd9-81f7-d2c67ab3bb61_542509189.txt
+OK
+Time taken: 0.563 seconds
+OK
+Time taken: 0.406 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_54329)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 1/4	Map 6: 1/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 2/4	Map 6: 1/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 3/4	Map 6: 1/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 4/4	Map 6: 2/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 4/4	Map 6: 2/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 4/4	Map 6: 3/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 2/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 56.28 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set WAIT_CUTOFF = 30;
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        if(requestedtime>0,requestedtime,allocatedtime) as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        allocatedtime>0 or requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 22:15:17 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_340f5ae8-4c0f-4108-9281-3702ec4e8305_563906710.txt
+OK
+Time taken: 0.612 seconds
+OK
+Time taken: 2.425 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_54421)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 0/4	Map 6: 0/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 1/4	Map 6: 1/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 1/4	Map 6: 2/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 1/4	Map 6: 3/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 1/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/4	Map 5: 2/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 2/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 3/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 2/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 4/4	Map 5: 4/4	Map 6: 4/4	Reducer 3: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 57.91 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_backup.container_fact;
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 22:33:01 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_ed71fee8-a546-431b-8f45-d80724587956_1980961084.txt
+OK
+Time taken: 0.621 seconds
+OK
+Time taken: 0.43 seconds
+FAILED: SemanticException java.io.FileNotFoundException: File hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=dogfood/date=2015-07-08/data does not exist.
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE="eric_backup.container_fact";
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 22:33:51 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_d0c23d80-a208-4928-97cd-e66de4cb3e93_2010845607.txt
+OK
+Time taken: 0.608 seconds
+OK
+Time taken: 0.131 seconds
+NoViableAltException(301@[])
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.joinSource(HiveParser_FromClauseParser.java:1795)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.fromClause(HiveParser_FromClauseParser.java:1465)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.fromClause(HiveParser.java:40200)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.singleSelectStatement(HiveParser.java:38106)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatement(HiveParser.java:37791)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.regularBody(HiveParser.java:37728)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpressionBody(HiveParser.java:36935)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36811)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.subQuerySource(HiveParser_FromClauseParser.java:5484)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.fromSource(HiveParser_FromClauseParser.java:3949)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.joinSource(HiveParser_FromClauseParser.java:1810)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_FromClauseParser.fromClause(HiveParser_FromClauseParser.java:1465)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.fromClause(HiveParser.java:40200)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.singleSelectStatement(HiveParser.java:38106)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatement(HiveParser.java:37791)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatementWithCTE(HiveParser.java:38572)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.createTableStatement(HiveParser.java:4796)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.ddlStatement(HiveParser.java:2145)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1399)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 25:8 cannot recognize input near '"eric_backup.container_fact"' 'where' 'requestedtime' in join source
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_backup.container_fact;
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 22:38:32 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_6714c813-3d24-42b2-95ce-4f6e482351f1_1014488470.txt
+OK
+Time taken: 0.564 seconds
+OK
+Time taken: 0.152 seconds
+FAILED: SemanticException java.io.FileNotFoundException: File hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=dogfood/date=2015-07-08/data does not exist.
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+hiveconf FACT_TABLE=eric_backup.container_fact;
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 22:39:57 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_27093d32-11fe-4beb-a5cc-1992e7efe975_783656359.txt
+NoViableAltException(26@[])
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1000)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 2:0 cannot recognize input near 'hiveconf' 'FACT_TABLE' '='
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(reservedtime/60000)*60) as minute_start,
+        reservedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        3 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        4 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        5 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and allocatedtime=0
+        and (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 22:50:59 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_819784d3-9818-4263-809c-2cb1cde45bb2_1593069925.txt
+OK
+Time taken: 0.575 seconds
+OK
+Time taken: 0.151 seconds
+FAILED: SemanticException java.io.FileNotFoundException: File hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=dogfood/date=2015-07-08/data does not exist.
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(reservedtime/60000)*60) as minute_start,
+        reservedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        3 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        4 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        5 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and allocatedtime=0
+        and (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 22:59:49 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_5a5c8698-8db7-4fff-bb83-822a3129930b_716731661.txt
+OK
+Time taken: 0.574 seconds
+OK
+Time taken: 0.152 seconds
+FAILED: SemanticException java.io.FileNotFoundException: File hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=dogfood/date=2015-07-08/data does not exist.
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        allocatedtime>0
+        and reservedtime=0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and (reservedtime=0 or (reservedtime>0 and allocatedtime>0))
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(reservedtime/60000)*60) as minute_start,
+        reservedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        3 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        4 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        5 as action,
+        system,
+        date
+    from
+        eric_backup.container_fact
+    where
+        reservedtime>0
+        and allocatedtime=0
+        and (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 24 23:33:58 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_6041ef97-3783-4b45-91b6-b13905ce217f_1421409787.txt
+OK
+Time taken: 0.566 seconds
+OK
+Time taken: 0.151 seconds
+FAILED: SemanticException java.io.FileNotFoundException: File hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=dogfood/date=2015-07-08/data does not exist.
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric.backup;
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        allocatedtime>0
+        and reservedtime=0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and (reservedtime=0 or (reservedtime>0 and allocatedtime>0))
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(reservedtime/60000)*60) as minute_start,
+        reservedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        3 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        4 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        5 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and allocatedtime=0
+        and (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 01:16:43 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_0cd66db5-d099-4dd4-8fd7-506e417bcf93_1641779915.txt
+OK
+Time taken: 0.559 seconds
+OK
+Time taken: 0.151 seconds
+FAILED: SemanticException [Error 10001]: Line 25:8 Table not found 'backup'
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        allocatedtime>0
+        and reservedtime=0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and (reservedtime=0 or (reservedtime>0 and allocatedtime>0))
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(reservedtime/60000)*60) as minute_start,
+        reservedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        3 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        4 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        5 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and allocatedtime=0
+        and (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 01:20:39 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_9a90376d-97b4-4321-9bbd-b0c621de6876_1065834919.txt
+OK
+Time taken: 0.638 seconds
+OK
+Time taken: 0.26 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_55468)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Map 7: -/-	Map 8: -/-	Map 9: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Status: Failed
+Vertex failed, vertexName=Map 1, vertexId=vertex_1442298768312_55468_1_05, diagnostics=[Vertex Input: container_fact initializer failed., Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=iheartradio/date=2015-07-10/data
+Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=marketshare/date=2015-07-08/data]
+Vertex failed, vertexName=Map 9, vertexId=vertex_1442298768312_55468_1_07, diagnostics=[Vertex Input: container_fact initializer failed., Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=iheartradio/date=2015-07-10/data
+Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=marketshare/date=2015-07-08/data]
+Vertex failed, vertexName=Map 6, vertexId=vertex_1442298768312_55468_1_06, diagnostics=[Vertex Input: container_fact initializer failed., Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=iheartradio/date=2015-07-10/data
+Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=marketshare/date=2015-07-08/data]
+Vertex failed, vertexName=Map 7, vertexId=vertex_1442298768312_55468_1_00, diagnostics=[Vertex Input: container_fact initializer failed., Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=iheartradio/date=2015-07-10/data
+Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=marketshare/date=2015-07-08/data]
+Vertex failed, vertexName=Map 5, vertexId=vertex_1442298768312_55468_1_04, diagnostics=[Vertex Input: container_fact initializer failed., Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=iheartradio/date=2015-07-10/data
+Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=marketshare/date=2015-07-08/data]
+Vertex failed, vertexName=Map 8, vertexId=vertex_1442298768312_55468_1_03, diagnostics=[Vertex Input: container_fact initializer failed., Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=iheartradio/date=2015-07-10/data
+Input path does not exist: hdfs://nn-dogfood.s3s.altiscale.com:8020/user/eric/data/log_pipeline/dev/4/container/containers/container_facts/system=marketshare/date=2015-07-08/data]
+Vertex killed, vertexName=Reducer 4, vertexId=vertex_1442298768312_55468_1_01, diagnostics=[Vertex received Kill in INITED state.]
+Vertex killed, vertexName=Reducer 3, vertexId=vertex_1442298768312_55468_1_02, diagnostics=[Vertex received Kill in INITED state.]
+DAG failed due to vertex failure. failedVertices:6 killedVertices:2
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use thomas_test;
+
+drop table if exists request_assign_release_from_cf;
+
+create table request_assign_release_from_cf as
+
+select 
+    min(minute_start) as minute_start,
+    timestamp,
+    jobid,
+    sum(memory) as memory,
+    sum(vcores) as vcores,
+    action as action,
+    system as system,
+    min(date) as date
+from (
+    select
+        int(bigint(requestedtime/60000)*60) as minute_start,
+        requestedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        0 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        requestedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        1 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        allocatedtime>0
+        and reservedtime=0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    
+    union all
+    
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        2 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and (reservedtime=0 or (reservedtime>0 and allocatedtime>0))
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(reservedtime/60000)*60) as minute_start,
+        reservedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        3 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint(allocatedtime/60000)*60) as minute_start,
+        allocatedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        4 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and allocatedtime>0
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+
+    union all
+
+    select
+        int(bigint((completedtime+killedtime+expiredtime+releasedtime)/60000)*60) as minute_start,
+        completedtime+killedtime+expiredtime+releasedtime as timestamp,
+        jobid,
+        memory,
+        vcores,
+        5 as action,
+        system,
+        date
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        reservedtime>0
+        and allocatedtime=0
+        and (completedtime>0 or killedtime>0 or expiredtime>0 or releasedtime>0)
+        and date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    ) tmp_union
+group by
+    timestamp,
+    action,
+    jobid,
+    system
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 05:30:14 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_3ad141f9-fc40-4dd2-bc85-33a3d61552c7_325683522.txt
+OK
+Time taken: 0.561 seconds
+OK
+Time taken: 0.149 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_57939)
+
+Map 1: -/-	Map 5: -/-	Map 6: -/-	Map 7: -/-	Map 8: -/-	Map 9: -/-	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 0/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 0/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 0/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 0/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 1/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 0/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 0/3	Map 6: 0/3	Map 7: 1/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 0/3	Map 5: 1/3	Map 6: 0/3	Map 7: 1/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 1/3	Map 6: 0/3	Map 7: 1/3	Map 8: 0/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 1/3	Map 6: 0/3	Map 7: 1/3	Map 8: 1/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 2/3	Map 6: 1/3	Map 7: 1/3	Map 8: 1/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 2/3	Map 6: 1/3	Map 7: 1/3	Map 8: 1/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 2/3	Map 6: 1/3	Map 7: 2/3	Map 8: 1/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 2/3	Map 6: 1/3	Map 7: 3/3	Map 8: 1/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 3/3	Map 6: 1/3	Map 7: 3/3	Map 8: 1/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 3/3	Map 6: 2/3	Map 7: 3/3	Map 8: 1/3	Map 9: 2/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 3/3	Map 6: 2/3	Map 7: 3/3	Map 8: 1/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 1/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 1/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 2/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 2/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 2/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 2/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 0/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 1/1	Reducer 4: 0/1	
+Map 1: 3/3	Map 5: 3/3	Map 6: 3/3	Map 7: 3/3	Map 8: 3/3	Map 9: 3/3	Reducer 3: 1/1	Reducer 4: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/request_assign_release_from_cf
+OK
+Time taken: 94.513 seconds
+

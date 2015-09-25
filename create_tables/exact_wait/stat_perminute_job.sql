@@ -1,5 +1,5 @@
-set START_DATE='2015-07-10';
-set END_DATE='2015-07-10';
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
 
 use thomas_test;
 
@@ -35,6 +35,9 @@ with job_level
                 when state='RUNNING'
                     and runningtime<bigint(minute_start)*1000
                     then container_size
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_size
             else 0 end) as memory_job,
 
         sum(
@@ -46,6 +49,9 @@ with job_level
                     then container_vcores
                 when state='RUNNING'
                     and runningtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
                     then container_vcores
             else 0 end) as vcores_job,
         -- What is waiting in the beginning of the minute?

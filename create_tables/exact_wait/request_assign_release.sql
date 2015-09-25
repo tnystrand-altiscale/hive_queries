@@ -1,5 +1,5 @@
-set START_DATE='2015-07-10';
-set END_DATE='2015-07-10';
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
 
 use thomas_test;
 
@@ -11,6 +11,7 @@ create table
         timestamp       bigint,
         jobid           string,
         memory          int,
+        vcores          int,
         action          int
     )
 partitioned by (
@@ -30,7 +31,8 @@ select
     int(bigint(timestamp/60000)*60) as minute_start,
     timestamp,
     concat('job_',substr(appid,13)) as jobid,
-    memory,
+    memory*num_containers as memory,
+    cores as vcores,
     0 as action,
     system,
     date
@@ -44,6 +46,7 @@ select
     timestamp,
     concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
     memory,
+    cores as vcores,
     case action
         when 'Assigned' then 1
         when 'Released' then 2

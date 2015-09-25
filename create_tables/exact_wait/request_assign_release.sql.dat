@@ -1364,3 +1364,278 @@ Starting query at: Fri Sep 11 19:01:16 UTC 2015
 
 _u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.action	_u1.system	_u1.date
 
+===================================================================
+set START_DATE='2015-07-10';
+set END_DATE='2015-07-10';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        vcores          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    cores as vcores,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    cores as vcores,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Thu Sep 17 22:17:58 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.vcores	_u1.action	_u1.system	_u1.date
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        vcores          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    cores as vcores,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    cores as vcores,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 18 01:23:23 UTC 2015
+-------------------------------------------------------------------
+
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        vcores          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory,
+    cores as vcores,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    cores as vcores,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Fri Sep 18 05:13:01 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.vcores	_u1.action	_u1.system	_u1.date
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+drop table if exists request_assign_release;
+
+create table
+    request_assign_release (
+        minute_start    int,
+        timestamp       bigint,
+        jobid           string,
+        memory          int,
+        vcores          int,
+        action          int
+    )
+partitioned by (
+    system string,
+    date string
+    )
+stored as
+    orc;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+insert overwrite table request_assign_release
+partition(system,date)
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',substr(appid,13)) as jobid,
+    memory*num_containers as memory,
+    cores as vcores,
+    0 as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.container_request
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+union all
+select
+    int(bigint(timestamp/60000)*60) as minute_start,
+    timestamp,
+    concat('job_',split(id,'[_]')[1],'_',split(id,'[_]')[2]) as jobid,
+    memory,
+    cores as vcores,
+    case action
+        when 'Assigned' then 1
+        when 'Released' then 2
+    else -1
+    end as action,
+    system,
+    date
+from
+    dp_prod_1_resourcemanager_events.assign_release
+where
+    date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+order by
+    timestamp
+-------------------------------------------------------------------
+Starting query at: Sat Sep 19 16:40:16 UTC 2015
+-------------------------------------------------------------------
+
+_u1.minute_start	_u1.timestamp	_u1.jobid	_u1.memory	_u1.vcores	_u1.action	_u1.system	_u1.date
+
