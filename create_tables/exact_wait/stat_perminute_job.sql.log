@@ -6393,3 +6393,903 @@ select
         system
 ] used as job_level at Line 62:8: (possible column names are: container_wait_time, memory, container_size, cluster_memory, minute_start, job_id, queue, container_id, state, measure_date, account, cluster_uuid, principal_uuid, user_key, vcores, container_vcores, number_apps, host, requestedtime, allocatedtime, acquiredtime, runningtime, requestedtime_minute, container_wait_time_unagg, system, date)
 
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then container_size
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then container_size
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then container_size
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_size
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then container_vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               container_size,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               container_vcores,0)) as vcores_REQ_job
+    from
+        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+    where
+        measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster,
+    cc.memory_capacity,
+    cc.memory_max_capacity,
+    cc.cluster_memory_capacity,
+    cc.vcore_capacity,
+    cc.vcore_max_capacity,
+    cc.cluster_vcore_capacity
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system and ql.queue=ul.queue)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system and ul.queue=jl.queue and ul.user_key=jl.user_key)
+join
+    capacity_combined_avgd_hour as cc
+on (floor(jl.minute_start/3600)=floor(cc.timestamp/3600)
+    and jl.system=cc.queue_system
+    and jl.queue=cc.queue_name
+    and jl.measure_date=cc.queue_date)
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 20:11:45 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_4c1a6c0e-abb9-4aca-b891-e3710c600396_1213960112.txt
+OK
+Time taken: 0.621 seconds
+OK
+Time taken: 0.141 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_60475)
+
+Map 1: -/-	Map 12: -/-	Map 15: -/-	Map 5: -/-	Map 7: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 0/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 0/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 0/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 0/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 0/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 1/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 1/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 1/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 1/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 1/1	Map 5: 0/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 1/1	Map 5: 1/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 0/4	Map 15: 1/1	Map 5: 1/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 1/4	Map 15: 1/1	Map 5: 1/4	Map 7: 0/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/4	Map 12: 1/4	Map 15: 1/1	Map 5: 1/4	Map 7: 1/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 1/4	Map 12: 1/4	Map 15: 1/1	Map 5: 1/4	Map 7: 1/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/4	Map 12: 1/4	Map 15: 1/1	Map 5: 1/4	Map 7: 1/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/4	Map 12: 2/4	Map 15: 1/1	Map 5: 1/4	Map 7: 2/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/4	Map 12: 2/4	Map 15: 1/1	Map 5: 2/4	Map 7: 2/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/4	Map 12: 2/4	Map 15: 1/1	Map 5: 2/4	Map 7: 2/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/4	Map 12: 2/4	Map 15: 1/1	Map 5: 2/4	Map 7: 2/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 3/4	Map 12: 2/4	Map 15: 1/1	Map 5: 2/4	Map 7: 2/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 3/4	Map 12: 3/4	Map 15: 1/1	Map 5: 2/4	Map 7: 2/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 3/4	Map 12: 3/4	Map 15: 1/1	Map 5: 2/4	Map 7: 3/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 3/4	Map 12: 3/4	Map 15: 1/1	Map 5: 3/4	Map 7: 3/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 4/4	Map 12: 3/4	Map 15: 1/1	Map 5: 3/4	Map 7: 3/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 4/4	Map 12: 3/4	Map 15: 1/1	Map 5: 3/4	Map 7: 4/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 3/4	Map 7: 4/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 3/4	Map 7: 4/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 3/4	Map 7: 4/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 0/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 0/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 0/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 4/4	Map 12: 4/4	Map 15: 1/1	Map 5: 4/4	Map 7: 4/4	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 1/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 73.207 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set SERIES_TABLE= eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend;
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then container_size
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then container_size
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then container_size
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_size
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then container_vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               container_size,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               container_vcores,0)) as vcores_REQ_job
+    from
+        ${hiveconf:SERIES_TABLE} as cts
+    where
+        measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster,
+    cc.memory_capacity,
+    cc.memory_max_capacity,
+    cc.cluster_memory_capacity,
+    cc.vcore_capacity,
+    cc.vcore_max_capacity,
+    cc.cluster_vcore_capacity
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system and ql.queue=ul.queue)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system and ul.queue=jl.queue and ul.user_key=jl.user_key)
+join
+    capacity_combined_avgd_hour as cc
+on (floor(jl.minute_start/3600)=floor(cc.timestamp/3600)
+    and jl.system=cc.queue_system
+    and jl.queue=cc.queue_name
+    and jl.measure_date=cc.queue_date)
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 22:25:31 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_2288fda6-c34c-44fe-a90c-33ea292fea67_153987307.txt
+OK
+Time taken: 0.574 seconds
+OK
+Time taken: 0.472 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_60983)
+
+Map 1: -/-	Map 12: -/-	Map 15: -/-	Map 5: -/-	Map 7: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 12: 0/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 12: 0/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/9	Map 12: 0/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/9	Map 12: 1/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 3/9	Map 12: 3/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 3/9	Map 12: 4/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 4/9	Map 12: 5/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 5/9	Map 12: 5/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 5/9	Map 12: 6/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 5/9	Map 12: 6/10	Map 15: 0/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 5/9	Map 12: 6/10	Map 15: 1/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 6/10	Map 15: 1/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 0/10	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 0/10	Map 7: 2/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 1/10	Map 7: 3/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 1/10	Map 7: 4/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 2/10	Map 7: 4/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 4/10	Map 7: 4/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 4/10	Map 7: 5/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 6/10	Map 7: 5/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 6/10	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/9	Map 12: 7/10	Map 15: 1/1	Map 5: 6/10	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 8/10	Map 15: 1/1	Map 5: 6/10	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 9/10	Map 15: 1/1	Map 5: 6/10	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 9/10	Map 15: 1/1	Map 5: 6/10	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 9/10	Map 15: 1/1	Map 5: 7/10	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 10/10	Map 15: 1/1	Map 5: 7/10	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 10/10	Map 15: 1/1	Map 5: 7/10	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 10/10	Map 15: 1/1	Map 5: 7/10	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 10/10	Map 15: 1/1	Map 5: 7/10	Map 7: 8/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/9	Map 12: 10/10	Map 15: 1/1	Map 5: 8/10	Map 7: 8/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 8/9	Map 12: 10/10	Map 15: 1/1	Map 5: 8/10	Map 7: 8/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 8/9	Map 12: 10/10	Map 15: 1/1	Map 5: 9/10	Map 7: 8/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 8/9	Map 12: 10/10	Map 15: 1/1	Map 5: 9/10	Map 7: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 8/9	Map 12: 10/10	Map 15: 1/1	Map 5: 9/10	Map 7: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 8/9	Map 12: 10/10	Map 15: 1/1	Map 5: 9/10	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 9/10	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 0/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 0/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 9/9	Map 12: 10/10	Map 15: 1/1	Map 5: 10/10	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 1/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 68.4 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set SERIES_TABLE= eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend;
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then container_size
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then container_size
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then container_size
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_size
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then container_vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               container_size,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               container_vcores,0)) as vcores_REQ_job
+    from
+        ${hiveconf:SERIES_TABLE} as cts
+    where
+        measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster,
+    cc.memory_capacity,
+    cc.memory_max_capacity,
+    cc.cluster_memory_capacity,
+    cc.vcore_capacity,
+    cc.vcore_max_capacity,
+    cc.cluster_vcore_capacity
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system and ql.queue=ul.queue)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system and ul.queue=jl.queue and ul.user_key=jl.user_key)
+join
+    capacity_combined_avgd_hour as cc
+on (floor(jl.minute_start/3600)=floor(cc.timestamp/3600)
+    and jl.system=cc.queue_system
+    and jl.queue=cc.queue_name
+    and jl.measure_date=cc.queue_date)
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep 26 00:52:57 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_d2c3c6e9-9170-43d2-a2de-fac971e1fa4b_1734984820.txt
+OK
+Time taken: 0.615 seconds
+OK
+Time taken: 0.513 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_61517)
+
+Map 1: -/-	Map 12: -/-	Map 15: -/-	Map 5: -/-	Map 7: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 0/10	Map 15: 0/1	Map 5: 0/7	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 0/10	Map 15: 0/1	Map 5: 0/7	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 0/10	Map 15: 0/1	Map 5: 0/7	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 0/10	Map 15: 0/1	Map 5: 0/7	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 0/10	Map 15: 0/1	Map 5: 0/7	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 1/10	Map 15: 0/1	Map 5: 0/7	Map 7: 0/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 1/10	Map 15: 0/1	Map 5: 0/7	Map 7: 1/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 2/10	Map 15: 0/1	Map 5: 0/7	Map 7: 1/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 3/10	Map 15: 0/1	Map 5: 0/7	Map 7: 3/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 4/10	Map 15: 0/1	Map 5: 0/7	Map 7: 4/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 5/10	Map 15: 0/1	Map 5: 0/7	Map 7: 5/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 5/10	Map 15: 1/1	Map 5: 0/7	Map 7: 5/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/10	Map 12: 5/10	Map 15: 1/1	Map 5: 0/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 1/10	Map 12: 5/10	Map 15: 1/1	Map 5: 0/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/10	Map 12: 5/10	Map 15: 1/1	Map 5: 0/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 3/10	Map 12: 5/10	Map 15: 1/1	Map 5: 0/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 4/10	Map 12: 5/10	Map 15: 1/1	Map 5: 0/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 5/10	Map 12: 5/10	Map 15: 1/1	Map 5: 0/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 5/10	Map 12: 6/10	Map 15: 1/1	Map 5: 0/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 5/10	Map 12: 6/10	Map 15: 1/1	Map 5: 1/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/10	Map 12: 6/10	Map 15: 1/1	Map 5: 1/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/10	Map 12: 6/10	Map 15: 1/1	Map 5: 2/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/10	Map 12: 6/10	Map 15: 1/1	Map 5: 3/7	Map 7: 6/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/10	Map 12: 6/10	Map 15: 1/1	Map 5: 3/7	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 6/10	Map 12: 6/10	Map 15: 1/1	Map 5: 3/7	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 12: 6/10	Map 15: 1/1	Map 5: 4/7	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 12: 7/10	Map 15: 1/1	Map 5: 4/7	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 12: 7/10	Map 15: 1/1	Map 5: 4/7	Map 7: 7/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 12: 7/10	Map 15: 1/1	Map 5: 4/7	Map 7: 8/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 7/10	Map 12: 8/10	Map 15: 1/1	Map 5: 4/7	Map 7: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 8/10	Map 12: 8/10	Map 15: 1/1	Map 5: 4/7	Map 7: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 8/10	Map 12: 8/10	Map 15: 1/1	Map 5: 5/7	Map 7: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/10	Map 12: 8/10	Map 15: 1/1	Map 5: 5/7	Map 7: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/10	Map 12: 8/10	Map 15: 1/1	Map 5: 6/7	Map 7: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/10	Map 12: 9/10	Map 15: 1/1	Map 5: 6/7	Map 7: 9/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/10	Map 12: 9/10	Map 15: 1/1	Map 5: 6/7	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/10	Map 12: 10/10	Map 15: 1/1	Map 5: 6/7	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 9/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 0/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 10/10	Map 12: 10/10	Map 15: 1/1	Map 5: 7/7	Map 7: 10/10	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 1/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 65.761 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set SERIES_TABLE= eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend;
+
+use thomas_test;
+
+DROP TABLE IF EXISTS state_perminute_job;
+
+CREATE table
+    state_perminute_job
+stored as
+    ORC
+as
+with job_level
+    as (
+    select
+        job_id,
+        minute_start,
+        system,
+        min(user_key) as user_key,
+        min(measure_date) as measure_date,
+        min(queue) as queue,
+        -- What is taking up memory in the beginng of the minute?
+        -- Filter for all containers that are at least allocated at beginning of minute
+        -- Container time series does not show allocated or acquired states for small times
+        -- This is a problem, since some memory will be sceduled before the minute, but not recorded
+        -- after. This can be fixed if grouping by container_id's.
+        -- For each running/allocated/acquired container, check if allocation time < minute_start
+        sum(
+            case when state='ALLOCATED' 
+                    and allocatedtime<bigint(minute_start)*1000
+                    then container_size
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then container_size
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then container_size
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_size
+            else 0 end) as memory_job,
+
+        sum(
+            case when state='ALLOCATED'
+                    and allocatedtime<bigint(minute_start)*1000
+                    then container_vcores 
+                when state='ACQUIRED'
+                    and acquiredtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RUNNING'
+                    and runningtime<bigint(minute_start)*1000
+                    then container_vcores
+                when state='RESERVED'
+                    and reservedtime<bigint(minute_start)*1000
+                    then container_vcores
+            else 0 end) as vcores_job,
+        -- What is waiting in the beginning of the minute?
+        -- Some REQUESTED are missing from the container_time_series
+        -- however this is unimportant since these are only <1 waiting sec.
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               container_size,0)) as memory_REQ_job,
+        sum(if(state='REQUESTED'
+               and requestedtime<bigint(minute_start)*1000,
+               container_vcores,0)) as vcores_REQ_job
+    from
+        ${hiveconf:SERIES_TABLE} as cts
+    where
+        measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        job_id,
+        minute_start,
+        system
+    ),
+    user_level
+    as (
+    select
+        minute_start,
+        queue,
+        user_key,
+        min(system) as system,
+        sum(memory_job) as memory_user,
+        sum(vcores_job) as vcores_user
+    from
+        job_level
+    group by
+        user_key,
+        queue,
+        minute_start,
+        system
+    ),
+    queue_level
+    as (
+    select
+        minute_start,
+        queue,
+        min(system) as system,
+        sum(memory_user) as memory_queue,
+        sum(vcores_user) as vcores_queue
+    from
+        user_level
+    group by
+        queue,
+        minute_start,
+        system
+    ),
+    cluster_level
+    as (
+    select
+        minute_start,
+        min(system) as system,
+        sum(memory_queue) as memory_cluster,
+        sum(vcores_queue) as vcores_cluster
+    from
+        queue_level
+    group by
+        minute_start,
+        system
+    )
+select
+    jl.job_id,
+    jl.minute_start,
+    jl.system,
+    jl.user_key,
+    jl.measure_date,
+    jl.queue,
+    jl.memory_REQ_job,
+    jl.memory_job,
+    ul.memory_user,
+    ql.memory_queue,
+    cl.memory_cluster,
+    jl.vcores_REQ_job,
+    jl.vcores_job,
+    ul.vcores_user,
+    ql.vcores_queue,
+    cl.vcores_cluster,
+    cc.memory_capacity,
+    cc.memory_max_capacity,
+    cc.cluster_memory_capacity,
+    cc.vcore_capacity,
+    cc.vcore_max_capacity,
+    cc.cluster_vcore_capacity
+from
+    cluster_level as cl
+join
+    queue_level as ql
+on (cl.minute_start=ql.minute_start and cl.system=ql.system)
+join
+    user_level as ul
+on (ql.minute_start=ul.minute_start and ql.system=ul.system and ql.queue=ul.queue)
+join
+    job_level as jl
+on (ul.minute_start=jl.minute_start and ul.system=jl.system and ul.queue=jl.queue and ul.user_key=jl.user_key)
+join
+    capacity_combined_avgd_hour as cc
+on (floor(jl.minute_start/3600)=floor(cc.timestamp/3600)
+    and jl.system=cc.queue_system
+    and jl.queue=cc.queue_name
+    and jl.measure_date=cc.queue_date)
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep 26 01:05:11 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_fc29c1db-f17b-4d03-ad13-8111d85c8a50_1075245526.txt
+OK
+Time taken: 0.611 seconds
+OK
+Time taken: 0.516 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_61526)
+
+Map 1: -/-	Map 12: -/-	Map 15: -/-	Map 5: -/-	Map 7: -/-	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/2	Map 12: 0/2	Map 15: 0/1	Map 5: 0/2	Map 7: 0/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/2	Map 12: 0/2	Map 15: 0/1	Map 5: 0/2	Map 7: 0/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/2	Map 12: 0/2	Map 15: 0/1	Map 5: 0/2	Map 7: 0/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/2	Map 12: 0/2	Map 15: 1/1	Map 5: 0/2	Map 7: 0/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/2	Map 12: 0/2	Map 15: 1/1	Map 5: 0/2	Map 7: 0/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 0/2	Map 12: 0/2	Map 15: 1/1	Map 5: 1/2	Map 7: 1/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 1/2	Map 12: 1/2	Map 15: 1/1	Map 5: 1/2	Map 7: 1/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 1/2	Map 12: 1/2	Map 15: 1/1	Map 5: 1/2	Map 7: 1/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 1/2	Map 12: 1/2	Map 15: 1/1	Map 5: 2/2	Map 7: 1/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 1/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 0/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 0/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 0/1	Reducer 9: 0/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 0/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 0/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 0/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 0/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 1/1	Reducer 11: 0/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 0/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 0/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 0/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Map 1: 2/2	Map 12: 2/2	Map 15: 1/1	Map 5: 2/2	Map 7: 2/2	Reducer 10: 1/1	Reducer 11: 1/1	Reducer 13: 1/1	Reducer 14: 1/1	Reducer 2: 1/1	Reducer 3: 1/1	Reducer 4: 1/1	Reducer 6: 1/1	Reducer 8: 1/1	Reducer 9: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/state_perminute_job
+OK
+Time taken: 35.25 seconds
+

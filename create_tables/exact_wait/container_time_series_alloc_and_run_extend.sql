@@ -1,10 +1,15 @@
-USE eric_cluster_metrics_dev_4;
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
 
 -- Changes to container_time_series
 -- Vcore-smoothed
 -- regular vcore kept
 -- waitingtime unaggregated (floating point)
 -- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
 
 drop table if exists container_time_series_alloc_and_run_extend;
 
@@ -55,7 +60,7 @@ SELECT
     cf.memory as container_size,
 	cts.cluster_memory,
 	cts.minute_start,
-	cts.job_id
+	cts.job_id,
 	cts.queue,
 	cts.container_id,
 	cts.state,
@@ -86,21 +91,24 @@ SELECT
         case
             when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
                 60
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 <  minute_start+60) then
+                cf.allocatedtime/1000-minute_start
             when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
                 minute_start+60-cf.requestedtime/1000
             when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
                 (cf.allocatedtime-cf.requestedtime)/1000
             else
                 0
-            end
+        end,
+        0
 	) AS container_wait_time_unagg_exact,
 	cts.system,
 	cts.date
 FROM
-	container_time_series as cts,
-	container_fact as cf
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
 WHERE
-	cts.container_id = cf.containerid and
-	cts.system 		= cf.system
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
 
 

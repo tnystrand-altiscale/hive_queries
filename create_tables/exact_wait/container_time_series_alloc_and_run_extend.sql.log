@@ -2187,3 +2187,2755 @@ OK
 Time taken: 0.34 seconds
 FAILED: NullPointerException null
 
+===================================================================
+USE eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint,
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+            end
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	container_time_series as cts,
+	container_fact as cf
+WHERE
+	cts.container_id = cf.containerid and
+	cts.system 		= cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 18:19:05 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_45cc5fd6-a5b8-4f9c-a7b0-f7a76dae5e09_1015724327.txt
+OK
+Time taken: 0.616 seconds
+OK
+Time taken: 0.538 seconds
+OK
+Time taken: 0.253 seconds
+FAILED: NullPointerException null
+
+===================================================================
+USE eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint,
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+            end
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	container_time_series as cts,
+	container_fact as cf
+WHERE
+	cts.container_id = cf.containerid and
+	cts.system 		= cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 18:39:04 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_2f516e2d-bd81-4718-9641-e10f1a5f9ff3_248807496.txt
+OK
+Time taken: 0.564 seconds
+OK
+Time taken: 0.499 seconds
+OK
+Time taken: 0.401 seconds
+FAILED: NullPointerException null
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint,
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+            end
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id = cf.containerid and
+	cts.system 		= cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 18:49:53 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_fe85659a-9789-4e15-a82d-530ed056bdd2_578176836.txt
+OK
+Time taken: 0.617 seconds
+OK
+Time taken: 0.497 seconds
+OK
+Time taken: 0.26 seconds
+FAILED: NullPointerException null
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint,
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+            end
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id = cf.containerid and
+	cts.system 		= cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 18:50:33 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_c3595658-bb00-4446-b996-f81132b36e6f_225106664.txt
+OK
+Time taken: 0.62 seconds
+OK
+Time taken: 0.485 seconds
+OK
+Time taken: 0.437 seconds
+FAILED: NullPointerException null
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        --reservedtime                        bigint,
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    --cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+            end
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:02:01 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_d3e12c29-1a82-43a9-94cf-9b38697fc30f_758637938.txt
+OK
+Time taken: 0.644 seconds
+OK
+Time taken: 0.183 seconds
+OK
+Time taken: 0.725 seconds
+FAILED: NullPointerException null
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double
+		--container_size                      int,
+		--cluster_memory                      bigint,
+		--minute_start                        int,
+		--job_id                              string,
+		--queue                               string,
+		--container_id                        string,
+		--state                               string,
+		--measure_date                        string,
+		--account                             int,
+		--cluster_uuid                        string,
+		--principal_uuid                      string,
+		--user_key                            string,
+		--vcores                              double,
+		--container_vcores                    int,
+		--number_apps                         bigint,
+		--host                                string,
+		--requestedtime                       bigint,
+        --allocatedtime                       bigint,
+		--acquiredtime                        bigint,
+        --runningtime                         bigint,
+        --reservedtime                        bigint,
+		--requestedtime_minute                bigint,
+		--container_wait_time_unagg           bigint,
+		--container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    --cf.memory as container_size,
+	--cts.cluster_memory,
+	--cts.minute_start,
+	--cts.job_id
+	--cts.queue,
+	--cts.container_id,
+	--cts.state,
+	--cts.measure_date,
+	--cts.account,
+	--cts.cluster_uuid,
+	--cts.principal_uuid,
+	--cts.user_key,
+	--cts.memory/cf.memory*cts.vcores as vcores,
+	--cts.vcores as container_vcores,
+	--cts.number_apps,
+	--cts.host,
+	--cf.requestedtime,
+    --cf.allocatedtime,
+	--cf.acquiredtime,
+    --cf.runningtime,
+    --cf.reservedtime,
+	--floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	--if(cts.state='REQUESTED',
+    --    if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+	--	    cts.container_wait_time,
+	--	    cts.container_wait_time
+	--	    +floor(cf.requestedtime/1000)
+	--	    -cts.minute_start),
+    --    0
+	--) AS container_wait_time_unagg,
+	--if(cts.state='REQUESTED',
+    --    case
+    --        when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            60
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            minute_start+60-cf.requestedtime/1000
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+    --            (cf.allocatedtime-cf.requestedtime)/1000
+    --        else
+    --            0
+    --        end
+	--) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:18:26 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_54d5514f-7aa1-4477-a88c-22f516263f22_1325588643.txt
+OK
+Time taken: 0.605 seconds
+OK
+Time taken: 1.114 seconds
+OK
+Time taken: 0.358 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint
+		--requestedtime_minute                bigint,
+		--container_wait_time_unagg           bigint,
+		--container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	--floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	--if(cts.state='REQUESTED',
+    --    if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+	--	    cts.container_wait_time,
+	--	    cts.container_wait_time
+	--	    +floor(cf.requestedtime/1000)
+	--	    -cts.minute_start),
+    --    0
+	--) AS container_wait_time_unagg,
+	--if(cts.state='REQUESTED',
+    --    case
+    --        when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            60
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            minute_start+60-cf.requestedtime/1000
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+    --            (cf.allocatedtime-cf.requestedtime)/1000
+    --        else
+    --            0
+    --        end
+	--) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:19:08 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_1f497c13-5ab0-47ac-b47d-e1ba856d696f_102797391.txt
+OK
+Time taken: 0.607 seconds
+OK
+Time taken: 0.438 seconds
+OK
+Time taken: 0.291 seconds
+FAILED: NullPointerException null
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string
+		--requestedtime                       bigint,
+        --allocatedtime                       bigint,
+		--acquiredtime                        bigint,
+        --runningtime                         bigint,
+        --reservedtime                        bigint
+		--requestedtime_minute                bigint,
+		--container_wait_time_unagg           bigint,
+		--container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	--cf.requestedtime,
+    --cf.allocatedtime,
+	--cf.acquiredtime,
+    --cf.runningtime,
+    --cf.reservedtime,
+	--floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	--if(cts.state='REQUESTED',
+    --    if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+	--	    cts.container_wait_time,
+	--	    cts.container_wait_time
+	--	    +floor(cf.requestedtime/1000)
+	--	    -cts.minute_start),
+    --    0
+	--) AS container_wait_time_unagg,
+	--if(cts.state='REQUESTED',
+    --    case
+    --        when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            60
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            minute_start+60-cf.requestedtime/1000
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+    --            (cf.allocatedtime-cf.requestedtime)/1000
+    --        else
+    --            0
+    --        end
+	--) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:19:42 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b7f03580-f131-475d-ba4c-211f2bc01ad6_426612715.txt
+OK
+Time taken: 0.569 seconds
+OK
+Time taken: 0.428 seconds
+OK
+Time taken: 0.355 seconds
+FAILED: NullPointerException null
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string
+		--state                               string,
+		--measure_date                        string,
+		--account                             int,
+		--cluster_uuid                        string,
+		--principal_uuid                      string,
+		--user_key                            string,
+		--vcores                              double,
+		--container_vcores                    int,
+		--number_apps                         bigint,
+		--host                                string,
+		--requestedtime                       bigint,
+        --allocatedtime                       bigint,
+		--acquiredtime                        bigint,
+        --runningtime                         bigint,
+        --reservedtime                        bigint
+		--requestedtime_minute                bigint,
+		--container_wait_time_unagg           bigint,
+		--container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id
+	cts.queue,
+	cts.container_id
+	--cts.state,
+	--cts.measure_date,
+	--cts.account,
+	--cts.cluster_uuid,
+	--cts.principal_uuid,
+	--cts.user_key,
+	--cts.memory/cf.memory*cts.vcores as vcores,
+	--cts.vcores as container_vcores,
+	--cts.number_apps,
+	--cts.host,
+	--cf.requestedtime,
+    --cf.allocatedtime,
+	--cf.acquiredtime,
+    --cf.runningtime,
+    --cf.reservedtime,
+	--floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	--if(cts.state='REQUESTED',
+    --    if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+	--	    cts.container_wait_time,
+	--	    cts.container_wait_time
+	--	    +floor(cf.requestedtime/1000)
+	--	    -cts.minute_start),
+    --    0
+	--) AS container_wait_time_unagg,
+	--if(cts.state='REQUESTED',
+    --    case
+    --        when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            60
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            minute_start+60-cf.requestedtime/1000
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+    --            (cf.allocatedtime-cf.requestedtime)/1000
+    --        else
+    --            0
+    --        end
+	--) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:20:30 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_9f8ec57d-4541-4e5d-b187-f7a322b92169_1551575119.txt
+OK
+Time taken: 0.604 seconds
+OK
+Time taken: 0.459 seconds
+OK
+Time taken: 0.283 seconds
+FAILED: NullPointerException null
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string
+		--state                               string,
+		--measure_date                        string,
+		--account                             int,
+		--cluster_uuid                        string,
+		--principal_uuid                      string,
+		--user_key                            string,
+		--vcores                              double,
+		--container_vcores                    int,
+		--number_apps                         bigint,
+		--host                                string,
+		--requestedtime                       bigint,
+        --allocatedtime                       bigint,
+		--acquiredtime                        bigint,
+        --runningtime                         bigint,
+        --reservedtime                        bigint
+		--requestedtime_minute                bigint,
+		--container_wait_time_unagg           bigint,
+		--container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	--cts.state,
+	--cts.measure_date,
+	--cts.account,
+	--cts.cluster_uuid,
+	--cts.principal_uuid,
+	--cts.user_key,
+	--cts.memory/cf.memory*cts.vcores as vcores,
+	--cts.vcores as container_vcores,
+	--cts.number_apps,
+	--cts.host,
+	--cf.requestedtime,
+    --cf.allocatedtime,
+	--cf.acquiredtime,
+    --cf.runningtime,
+    --cf.reservedtime,
+	--floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	--if(cts.state='REQUESTED',
+    --    if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+	--	    cts.container_wait_time,
+	--	    cts.container_wait_time
+	--	    +floor(cf.requestedtime/1000)
+	--	    -cts.minute_start),
+    --    0
+	--) AS container_wait_time_unagg,
+	--if(cts.state='REQUESTED',
+    --    case
+    --        when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            60
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+    --            minute_start+60-cf.requestedtime/1000
+    --        when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+    --            (cf.allocatedtime-cf.requestedtime)/1000
+    --        else
+    --            0
+    --        end
+	--) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:21:08 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_432d5d5b-be0b-4b7a-8c8c-bc51aa131bd1_1151749962.txt
+OK
+Time taken: 0.571 seconds
+OK
+Time taken: 0.445 seconds
+OK
+Time taken: 0.351 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+            end
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:21:39 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_d32503b2-e2c2-4fc7-9083-95ebde931290_59612633.txt
+OK
+Time taken: 0.562 seconds
+OK
+Time taken: 0.485 seconds
+MismatchedTokenException(26!=295)
+	at org.antlr.runtime.BaseRecognizer.recoverFromMismatchedToken(BaseRecognizer.java:617)
+	at org.antlr.runtime.BaseRecognizer.match(BaseRecognizer.java:115)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.createTableStatement(HiveParser.java:4551)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.ddlStatement(HiveParser.java:2145)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1399)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 13:2 mismatched input 'state' expecting ) near 'string' in create table statement
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+            end,
+        0
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:22:34 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_30da8cea-857f-4595-b030-39619db3266f_1657538940.txt
+OK
+Time taken: 0.606 seconds
+OK
+Time taken: 0.144 seconds
+MismatchedTokenException(26!=295)
+	at org.antlr.runtime.BaseRecognizer.recoverFromMismatchedToken(BaseRecognizer.java:617)
+	at org.antlr.runtime.BaseRecognizer.match(BaseRecognizer.java:115)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.createTableStatement(HiveParser.java:4551)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.ddlStatement(HiveParser.java:2145)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1399)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 13:2 mismatched input 'state' expecting ) near 'string' in create table statement
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+        end,
+        0
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:33:56 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_51c63165-fa27-47c0-af03-9602cd70cdbc_556420981.txt
+OK
+Time taken: 0.604 seconds
+OK
+Time taken: 0.132 seconds
+MismatchedTokenException(26!=295)
+	at org.antlr.runtime.BaseRecognizer.recoverFromMismatchedToken(BaseRecognizer.java:617)
+	at org.antlr.runtime.BaseRecognizer.match(BaseRecognizer.java:115)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.createTableStatement(HiveParser.java:4551)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.ddlStatement(HiveParser.java:2145)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1399)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 13:2 mismatched input 'state' expecting ) near 'string' in create table statement
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+        end,
+        0
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:35:18 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_e606967e-1e47-42bc-ad41-d0a36ea51779_1296558247.txt
+OK
+Time taken: 0.607 seconds
+OK
+Time taken: 0.146 seconds
+MismatchedTokenException(26!=295)
+	at org.antlr.runtime.BaseRecognizer.recoverFromMismatchedToken(BaseRecognizer.java:617)
+	at org.antlr.runtime.BaseRecognizer.match(BaseRecognizer.java:115)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.createTableStatement(HiveParser.java:4551)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.ddlStatement(HiveParser.java:2145)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1399)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 28:2 mismatched input 'requestedtime_minute' expecting ) near 'bigint' in create table statement
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint,
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+        end,
+        0
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 19:35:33 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_c9a0f3d1-09d2-4c0f-9dcd-5b958176f16d_972925707.txt
+OK
+Time taken: 0.61 seconds
+OK
+Time taken: 0.128 seconds
+OK
+Time taken: 0.457 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_60405)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 1/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 1/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 1/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 2/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 2/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 2/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 8/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 8/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Loading data to table eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend partition (system=null, date=null)
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-09}
+	Loading partition {system=visiblemeasures, date=2015-07-09}
+	Loading partition {system=iheartradio, date=2015-07-08}
+	Loading partition {system=marketshare, date=2015-07-08}
+	Loading partition {system=marketshare, date=2015-07-11}
+	Loading partition {system=marketshare, date=2015-07-12}
+	Loading partition {system=dogfood, date=2015-07-12}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-13}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-12}
+	Loading partition {system=iheartradio, date=2015-07-12}
+	Loading partition {system=marketshare, date=2015-07-09}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-11}
+	Loading partition {system=dogfood, date=2015-07-09}
+	Loading partition {system=dogfood, date=2015-07-08}
+	Loading partition {system=marketshare, date=2015-07-13}
+	Loading partition {system=visiblemeasures, date=2015-07-11}
+	Loading partition {system=visiblemeasures, date=2015-07-08}
+	Loading partition {system=iheartradio, date=2015-07-13}
+	Loading partition {system=iheartradio, date=2015-07-11}
+	Loading partition {system=visiblemeasures, date=2015-07-13}
+OK
+Time taken: 565.198 seconds
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint,
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 <  minute_start+60) then
+                cf.allocatedtime/1000-minute_start
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+        end,
+        0
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Fri Sep 25 20:13:05 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_bf48b656-05e7-4a86-a59b-5a7c55448534_187569929.txt
+OK
+Time taken: 0.591 seconds
+OK
+Time taken: 0.686 seconds
+OK
+Time taken: 0.29 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_60476)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: -/-	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 1/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/9	Map 4: 1/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/9	Map 4: 1/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 1/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 2/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 4/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 5/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 6/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 7/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 8/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 8/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 8/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 9/9	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Loading data to table eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend partition (system=null, date=null)
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=dogfood, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-09}
+	Loading partition {system=iheartradio, date=2015-07-13}
+	Loading partition {system=dogfood, date=2015-07-13}
+	Loading partition {system=visiblemeasures, date=2015-07-10}
+	Loading partition {system=visiblemeasures, date=2015-07-12}
+	Loading partition {system=dogfood, date=2015-07-12}
+	Loading partition {system=iheartradio, date=2015-07-08}
+	Loading partition {system=dogfood, date=2015-07-09}
+	Loading partition {system=visiblemeasures, date=2015-07-11}
+	Loading partition {system=visiblemeasures, date=2015-07-09}
+	Loading partition {system=marketshare, date=2015-07-12}
+	Loading partition {system=marketshare, date=2015-07-08}
+	Loading partition {system=iheartradio, date=2015-07-11}
+	Loading partition {system=visiblemeasures, date=2015-07-13}
+	Loading partition {system=visiblemeasures, date=2015-07-08}
+	Loading partition {system=dogfood, date=2015-07-11}
+	Loading partition {system=marketshare, date=2015-07-13}
+	Loading partition {system=marketshare, date=2015-07-11}
+	Loading partition {system=iheartradio, date=2015-07-12}
+	Loading partition {system=dogfood, date=2015-07-08}
+	Loading partition {system=marketshare, date=2015-07-10}
+	Loading partition {system=marketshare, date=2015-07-09}
+OK
+Time taken: 546.669 seconds
+
+===================================================================
+set SERIES_TABLE=eric_cluster_metrics_dev_4.container_time_series;
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use eric_cluster_metrics_dev_4;
+
+-- Changes to container_time_series
+-- Vcore-smoothed
+-- regular vcore kept
+-- waitingtime unaggregated (floating point)
+-- Column for minute when container was first requested
+
+-- Need container_time_series with ALL the containers
+
+drop table if exists container_time_series_alloc_and_run_extend;
+
+create table
+    container_time_series_alloc_and_run_extend (
+		container_wait_time                 bigint,
+		memory                              double,
+		container_size                      int,
+		cluster_memory                      bigint,
+		minute_start                        int,
+		job_id                              string,
+		queue                               string,
+		container_id                        string,
+		state                               string,
+		measure_date                        string,
+		account                             int,
+		cluster_uuid                        string,
+		principal_uuid                      string,
+		user_key                            string,
+		vcores                              double,
+		container_vcores                    int,
+		number_apps                         bigint,
+		host                                string,
+		requestedtime                       bigint,
+        allocatedtime                       bigint,
+		acquiredtime                        bigint,
+        runningtime                         bigint,
+        reservedtime                        bigint,
+		requestedtime_minute                bigint,
+		container_wait_time_unagg           bigint,
+		container_wait_time_unagg_exact     double
+	)
+partitioned by (
+	system string,
+	date string
+	)
+stored as
+	orc;
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+insert overwrite table container_time_series_alloc_and_run_extend
+partition(system,date)
+SELECT
+	cts.container_wait_time,
+	cts.memory,
+    cf.memory as container_size,
+	cts.cluster_memory,
+	cts.minute_start,
+	cts.job_id,
+	cts.queue,
+	cts.container_id,
+	cts.state,
+	cts.measure_date,
+	cts.account,
+	cts.cluster_uuid,
+	cts.principal_uuid,
+	cts.user_key,
+	cts.memory/cf.memory*cts.vcores as vcores,
+	cts.vcores as container_vcores,
+	cts.number_apps,
+	cts.host,
+	cf.requestedtime,
+    cf.allocatedtime,
+	cf.acquiredtime,
+    cf.runningtime,
+    cf.reservedtime,
+	floor(cf.requestedtime/60000)*60 as requestedtime_minute,
+	if(cts.state='REQUESTED',
+        if(floor(cf.requestedtime/60000)*60=cts.minute_start,
+		    cts.container_wait_time,
+		    cts.container_wait_time
+		    +floor(cf.requestedtime/1000)
+		    -cts.minute_start),
+        0
+	) AS container_wait_time_unagg,
+	if(cts.state='REQUESTED',
+        case
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                60
+            when (cf.requestedtime/1000 <= minute_start and cf.allocatedtime/1000 <  minute_start+60) then
+                cf.allocatedtime/1000-minute_start
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 >= minute_start+60) then
+                minute_start+60-cf.requestedtime/1000
+            when (cf.requestedtime/1000 >  minute_start and cf.allocatedtime/1000 <  minute_start+60 and cf.allocatedtime/1000>0) then
+                (cf.allocatedtime-cf.requestedtime)/1000
+            else
+                0
+        end,
+        0
+	) AS container_wait_time_unagg_exact,
+	cts.system,
+	cts.date
+FROM
+	${hiveconf:SERIES_TABLE} as cts,
+	${hiveconf:FACT_TABLE} as cf
+WHERE
+	cts.container_id    = cf.containerid and
+	cts.system          = cf.system
+
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep 26 00:58:43 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_115cc5e6-6eb3-4b84-ab14-037cd81aab6a_80430706.txt
+OK
+Time taken: 0.561 seconds
+OK
+Time taken: 0.687 seconds
+OK
+Time taken: 0.253 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_61521)
+
+Map 1: -/-	Map 4: -/-	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/3	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/3	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/3	Map 4: 0/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 0/3	Map 4: 1/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 1/3	Map 4: 1/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/3	Map 4: 1/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/3	Map 4: 2/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 2/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 0/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 0/1	
+Map 1: 3/3	Map 4: 3/3	Reducer 2: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Loading data to table eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend partition (system=null, date=null)
+	Loading partition {system=iheartradio, date=2015-07-12}
+	Loading partition {system=iheartradio, date=2015-07-13}
+	Loading partition {system=iheartradio, date=2015-07-10}
+	Loading partition {system=iheartradio, date=2015-07-09}
+	Loading partition {system=iheartradio, date=2015-07-08}
+	Loading partition {system=iheartradio, date=2015-07-11}
+OK
+Time taken: 96.499 seconds
+

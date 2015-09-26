@@ -1,5 +1,6 @@
 set START_DATE='2015-07-08';
 set END_DATE='2015-07-14';
+set SERIES_TABLE= eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend;
 
 use thomas_test;
 
@@ -64,7 +65,7 @@ with job_level
                and requestedtime<bigint(minute_start)*1000,
                container_vcores,0)) as vcores_REQ_job
     from
-        eric_cluster_metrics_dev_4.container_time_series_alloc_and_run_extend as cts
+        ${hiveconf:SERIES_TABLE} as cts
     where
         measure_date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
     group by

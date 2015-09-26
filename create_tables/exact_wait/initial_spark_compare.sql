@@ -1,5 +1,6 @@
 set START_DATE='2015-07-08';
 set END_DATE='2015-07-14';
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
 
 use thomas_test;
 
@@ -21,7 +22,7 @@ as with exact_wait_time as (
                 end
             ) as total_waittime_exact
     from
-        eric_backup.container_fact
+        ${hiveconf:FACT_TABLE}
     where
         date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
     group by

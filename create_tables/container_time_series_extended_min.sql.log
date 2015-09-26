@@ -1,0 +1,148 @@
+###################################################################
+LOG DUMP FOR: container_time_series_extended_min.sql
+###################################################################
+===================================================================
+
+===================================================================
+use thomas_test;
+
+drop table if exists container_time_series_extended_min;
+
+create table
+    container_time_series_extended_min
+stored as
+    ORC
+as select
+    js.job_id,
+    js.system,
+    js.measure_date,
+    js.minute_start,
+    js.queue,
+    cts.container_wait_time,
+    cts.container_wait_time_unagg,
+    cts.memory,
+    if(cts.minute_start<=floor(cts.container_start_time/1000)+30,
+        cts.minute_memory/cts.container_wait_time_unagg*(cts.container_wait_time-30),
+        cts.minute_memory) as memory_sec_convrt,
+    cts.container_id,
+    cts.vcores,
+    if(cts.minute_start<=cts.(container_start_time)/1000+30,
+        cts.minute_vcores/cts.container_wait_time_unagg*(cts.container_wait_time-30),
+        cts.minute_vcores) as vcores_sec_convrt,
+    -- Memory related
+    js.memory_job,
+    js.memory_cluster,
+    js.memory_capacity,
+    js.memory_max_capacity,
+    cts.cluster_memory as total_cluster_memory,
+    -- Vcore related
+    js.vcores_job,
+    js.vcores_cluster,
+    js.vcore_capacity,
+    js.vcore_max_capacity,
+    js.cluster_vcore_capacity as total_cluster_vcores
+
+from
+    thomas_test.job_min_with_queue_lim as js,
+    eric_cluster_metrics_dev_4.container_time_series_vhacked_with_unagg as cts
+where
+    cts.container_wait_time > 30 and
+    --cts.measure_date        = '2015-07-13' and
+    --cts.minute_start between 1436745600 and 1436746200 and
+    --(cts.state = 'REQUESTED' or cts.state='EXPIRED') and
+    js.job_id       = cts.job_id        and
+    js.minute_start = cts.minute_start  and
+    js.system       = cts.system
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep 26 01:32:39 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_9ba29639-0101-4c13-8d14-2a848ac813fb_1153729072.txt
+
+===================================================================
+use thomas_test;
+
+drop table if exists container_time_series_extended_min;
+
+create table
+    container_time_series_extended_min
+stored as
+    ORC
+as select
+    js.job_id,
+    js.system,
+    js.measure_date,
+    js.minute_start,
+    js.queue,
+    cts.container_wait_time,
+    cts.container_wait_time_unagg,
+    cts.memory,
+    if(cts.minute_start<=floor(cts.container_start_time/1000)+0,
+        cts.minute_memory/cts.container_wait_time_unagg*(cts.container_wait_time-0),
+        cts.minute_memory) as memory_sec_convrt,
+    cts.container_id,
+    cts.vcores,
+    if(cts.minute_start<=floor(cts.container_start_time/1000)+0,
+        cts.minute_vcores/cts.container_wait_time_unagg*(cts.container_wait_time-0),
+        cts.minute_vcores) as vcores_sec_convrt,
+    -- Memory related
+    js.memory_job,
+    js.memory_cluster,
+    js.memory_capacity,
+    js.memory_max_capacity,
+    cts.cluster_memory as total_cluster_memory,
+    -- Vcore related
+    js.vcores_job,
+    js.vcores_cluster,
+    js.vcore_capacity,
+    js.vcore_max_capacity,
+    js.cluster_vcore_capacity as total_cluster_vcores
+
+from
+    thomas_test.job_min_with_queue_lim as js,
+    eric_cluster_metrics_dev_4.container_time_series_vhacked_with_unagg as cts
+where
+    cts.container_wait_time > 0 and
+    cts.measure_date        = '2015-07-13' and
+    --cts.minute_start between 1436745600 and 1436746200 and
+    --(cts.state = 'REQUESTED' or cts.state='EXPIRED') and
+    js.job_id       = cts.job_id        and
+    js.minute_start = cts.minute_start  and
+    js.system       = cts.system
+
+-------------------------------------------------------------------
+Starting query at: Sat Sep 26 01:34:37 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_12b086d1-9822-4611-b01e-fc0ca27e2efe_2067789832.txt
+OK
+Time taken: 0.633 seconds
+OK
+Time taken: 0.44 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1442298768312_61612)
+
+Map 1: -/-	Map 2: -/-	
+Map 1: 0/1	Map 2: 0/2	
+Map 1: 0/1	Map 2: 0/2	
+Map 1: 1/1	Map 2: 0/2	
+Map 1: 1/1	Map 2: 1/2	
+Map 1: 1/1	Map 2: 1/2	
+Map 1: 1/1	Map 2: 1/2	
+Map 1: 1/1	Map 2: 1/2	
+Map 1: 1/1	Map 2: 1/2	
+Map 1: 1/1	Map 2: 1/2	
+Map 1: 1/1	Map 2: 2/2	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/container_time_series_extended_min
+OK
+Time taken: 33.333 seconds
+
