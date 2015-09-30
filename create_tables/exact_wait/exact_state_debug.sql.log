@@ -1,0 +1,298 @@
+###################################################################
+LOG DUMP FOR: exact_state_debug.sql
+###################################################################
+===================================================================
+
+===================================================================
+set STATE_TIME=1436511180000;
+set STATE_DATE='2015-07-10';
+set STATE_DATE_BEG='2015-07-09';
+
+use thomas_test;
+
+with actual_runmem_job as
+    (
+    select
+        jobid,
+        ${hiveconf:STATE_TIME} as minute_start,
+        sum(memory) as run_memory,
+        ${hiveconf:STATE_DATE} as date,
+        system,
+        queue,
+        user_key
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        (
+        (allocatedtime <= ${hiveconf:STATE_TIME} and allocatedtime>0)
+        or
+        (reservedtime <= ${hiveconf:STATE_TIME} and reservedtime>0)
+        )
+        and
+        (
+        completedtime >= ${hiveconf:STATE_TIME}
+        or
+        releasedtime >= ${hiveconf:STATE_TIME}
+        or
+        expiredtime >= ${hiveconf:STATE_TIME}
+        or
+        killedtime >= ${hiveconf:STATE_TIME}
+        )
+        and date between ${hiveconf:STATE_DATE_BEG} and ${hiveconf:STATE_DATE}
+        and system='iheartradio'
+    group by
+        jobid,
+        system
+    )
+
+select
+    jobid,
+    ar.minute_start,
+    ar.running_memory as memory_job_exact,
+    spj.memory_job,
+    spj.memory_user,
+    spj.memory_cluster,
+    spj.memory_capacity,
+    spj.memory_max_capacity,
+    spj.cluster_memory_capacity,
+    ar.system,
+    ar.date
+from
+    actual_runmem as ar
+left outer join
+    state_perminute_job as spj
+on
+    bigint(spj.minute_start)*1000=ar.minute_start
+    and spj.system=ar.system
+    and spj.job_id=ar.jobid
+-------------------------------------------------------------------
+Starting query at: Sun Sep 27 23:25:50 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_0fe7a624-038c-4a11-952c-095a49cc2375_935858668.txt
+OK
+Time taken: 0.58 seconds
+FAILED: SemanticException [Error 10001]: Line 51:4 Table not found 'actual_runmem'
+
+===================================================================
+set STATE_TIME=1436511180000;
+set STATE_DATE='2015-07-10';
+set STATE_DATE_BEG='2015-07-09';
+
+use thomas_test;
+
+with actual_runmem_job as
+    (
+    select
+        jobid,
+        ${hiveconf:STATE_TIME} as minute_start,
+        sum(memory) as run_memory,
+        ${hiveconf:STATE_DATE} as date,
+        system,
+        queue,
+        user_key
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        (
+        (allocatedtime <= ${hiveconf:STATE_TIME} and allocatedtime>0)
+        or
+        (reservedtime <= ${hiveconf:STATE_TIME} and reservedtime>0)
+        )
+        and
+        (
+        completedtime >= ${hiveconf:STATE_TIME}
+        or
+        releasedtime >= ${hiveconf:STATE_TIME}
+        or
+        expiredtime >= ${hiveconf:STATE_TIME}
+        or
+        killedtime >= ${hiveconf:STATE_TIME}
+        )
+        and date between ${hiveconf:STATE_DATE_BEG} and ${hiveconf:STATE_DATE}
+        and system='iheartradio'
+    group by
+        jobid,
+        system
+    )
+
+select
+    jobid,
+    ar.minute_start,
+    ar.running_memory as memory_job_exact,
+    spj.memory_job,
+    spj.memory_user,
+    spj.memory_cluster,
+    spj.memory_capacity,
+    spj.memory_max_capacity,
+    spj.cluster_memory_capacity,
+    ar.system,
+    ar.date
+from
+    actual_runmem_job as ar
+left outer join
+    state_perminute_job as spj
+on
+    bigint(spj.minute_start)*1000=ar.minute_start
+    and spj.system=ar.system
+    and spj.job_id=ar.jobid
+-------------------------------------------------------------------
+Starting query at: Sun Sep 27 23:26:44 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b419bf01-01a5-416b-9196-73d9ff18bf2a_249892786.txt
+OK
+Time taken: 0.609 seconds
+FAILED: SemanticException Line 11:8 Expression not in GROUP BY key 'queue' in definition of CTE actual_runmem_job [
+select
+        jobid,
+        1436511180000 as minute_start,
+        sum(memory) as run_memory,
+        '2015-07-10' as date,
+        system,
+        queue,
+        user_key
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        (
+        (allocatedtime <= 1436511180000 and allocatedtime>0)
+        or
+        (reservedtime <= 1436511180000 and reservedtime>0)
+        )
+        and
+        (
+        completedtime >= 1436511180000
+        or
+        releasedtime >= 1436511180000
+        or
+        expiredtime >= 1436511180000
+        or
+        killedtime >= 1436511180000
+        )
+        and date between '2015-07-09' and '2015-07-10'
+        and system='iheartradio'
+    group by
+        jobid,
+        system
+] used as ar at Line 14:8
+
+===================================================================
+set STATE_TIME=1436511180000;
+set STATE_DATE='2015-07-10';
+set STATE_DATE_BEG='2015-07-09';
+
+use thomas_test;
+
+with actual_runmem_job as
+    (
+    select
+        jobid,
+        ${hiveconf:STATE_TIME} as minute_start,
+        sum(memory) as run_memory,
+        ${hiveconf:STATE_DATE} as date,
+        system,
+        min(queue) as queue,
+        min(user_key) as user_key,
+    from
+        eric_cluster_metrics_dev_4.container_fact
+    where
+        (
+        (allocatedtime <= ${hiveconf:STATE_TIME} and allocatedtime>0)
+        or
+        (reservedtime <= ${hiveconf:STATE_TIME} and reservedtime>0)
+        )
+        and
+        (
+        completedtime >= ${hiveconf:STATE_TIME}
+        or
+        releasedtime >= ${hiveconf:STATE_TIME}
+        or
+        expiredtime >= ${hiveconf:STATE_TIME}
+        or
+        killedtime >= ${hiveconf:STATE_TIME}
+        )
+        and date between ${hiveconf:STATE_DATE_BEG} and ${hiveconf:STATE_DATE}
+        and system='iheartradio'
+    group by
+        jobid,
+        system
+    )
+
+select
+    jobid,
+    ar.minute_start,
+    ar.running_memory as memory_job_exact,
+    spj.memory_job,
+    spj.memory_user,
+    spj.memory_cluster,
+    spj.memory_capacity,
+    spj.memory_max_capacity,
+    spj.cluster_memory_capacity,
+    ar.user_key,
+    ar.queue,
+    ar.system,
+    ar.date
+from
+    actual_runmem_job as ar
+left outer join
+    state_perminute_job as spj
+on
+    bigint(spj.minute_start)*1000=ar.minute_start
+    and spj.system=ar.system
+    and spj.job_id=ar.jobid
+-------------------------------------------------------------------
+Starting query at: Sun Sep 27 23:27:52 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_4a787652-3eee-446f-b211-18430a15a3ee_627078357.txt
+OK
+Time taken: 0.61 seconds
+NoViableAltException(114@[146:1: selectExpression : ( expression | tableAllColumns );])
+	at org.antlr.runtime.DFA.noViableAlt(DFA.java:158)
+	at org.antlr.runtime.DFA.predict(DFA.java:116)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectExpression(HiveParser_SelectClauseParser.java:4142)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectItem(HiveParser_SelectClauseParser.java:3038)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectList(HiveParser_SelectClauseParser.java:1335)
+	at org.apache.hadoop.hive.ql.parse.HiveParser_SelectClauseParser.selectClause(HiveParser_SelectClauseParser.java:1070)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectClause(HiveParser.java:40271)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.singleSelectStatement(HiveParser.java:38085)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.selectStatement(HiveParser.java:37791)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.regularBody(HiveParser.java:37728)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpressionBody(HiveParser.java:36935)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36811)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.cteStatement(HiveParser.java:37156)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.withClause(HiveParser.java:37002)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.queryStatementExpression(HiveParser.java:36794)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.execStatement(HiveParser.java:1339)
+	at org.apache.hadoop.hive.ql.parse.HiveParser.statement(HiveParser.java:1037)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:199)
+	at org.apache.hadoop.hive.ql.parse.ParseDriver.parse(ParseDriver.java:166)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:404)
+	at org.apache.hadoop.hive.ql.Driver.compile(Driver.java:322)
+	at org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:975)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1040)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:911)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:901)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:268)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:220)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:423)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:359)
+	at org.apache.hadoop.hive.cli.CliDriver.processReader(CliDriver.java:456)
+	at org.apache.hadoop.hive.cli.CliDriver.processFile(CliDriver.java:466)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:748)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:686)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:625)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:212)
+FAILED: ParseException line 13:4 cannot recognize input near 'from' 'eric_cluster_metrics_dev_4' '.' in select expression
+

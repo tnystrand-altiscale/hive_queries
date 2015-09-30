@@ -3,9 +3,9 @@ set END_DATE='2015-07-14';
 
 use thomas_test;
 
-drop table if exists request_assign_release_from_cf;
+drop table if exists request_assign_release_from_cf_and_trans;
 
-create table request_assign_release_from_cf as
+create table request_assign_release_from_cf_and_trans as
 
 select 
     min(minute_start) as minute_start,

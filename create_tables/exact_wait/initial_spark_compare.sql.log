@@ -3935,3 +3935,501 @@ Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/ini
 OK
 Time taken: 29.537 seconds
 
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as with exact_wait_time as (
+    select
+        jobid,
+        system,
+        min(date) as date,
+        min(requestedtime>0) as launchtime,
+        sum(
+            case
+                when (allocatedtime>0 and requestedtime>0) then
+                    (allocatedtime-requestedtime)/1000*memory
+                else
+                    0
+                end
+            ) as total_waittime_exact
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        jobid,
+        system
+    )
+select
+    ew.launchtime,
+    ew.date,
+    jc.*, 
+    jws.memory_waiting as memory_waiting_sec,
+    ew.total_waittime_exact,
+    jws.max_mem_capacity_robbed_mbsec,
+    jwn.max_mem_capacity_robbed_mbmin,
+    jwn.memory_sec_convrt,
+    jws.elastic_unfairness_mem_capped_mbsec,
+    jwn.elastic_unfairness_mem_capped_mbmin,
+    jws.competing_job_mem_capped_mbsec,
+    jwn.competing_job_mem_capped_mbmin,
+    jws.max_vcr_capacity_robbed_vcrsec,
+    jwn.max_vcr_capacity_robbed_vcrmin,
+    jws.elastic_unfairness_vcore_capped_vcrsec,
+    jwn.elastic_unfairness_vcore_capped_vcrmin,
+    jws.competing_job_vcore_capped_vcrsec,
+    jwn.competing_job_vcore_capped_vcrmin
+from
+    job_categories_from_spark as jc
+join
+    job_wait_reasons_sec_granularity as jws
+on
+    jc.job_id=jws.job_id
+join
+    job_wait_reasons_min_granularity as jwn
+on
+    jws.job_id=jwn.job_id
+join
+    exact_wait_time as ew
+on
+    jwn.job_id=ew.jobid
+
+-------------------------------------------------------------------
+Starting query at: Mon Sep 28 17:47:00 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_8dcee715-f1ab-4127-87b2-4698aa068c92_14370963.txt
+OK
+Time taken: 0.648 seconds
+OK
+Time taken: 0.44 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1443438727599_1549)
+
+Map 1: -/-	Map 2: -/-	Map 4: -/-	Map 5: -/-	Reducer 3: 0/1	
+Map 1: 0/1	Map 2: 0/3	Map 4: 0/1	Map 5: 0/1	Reducer 3: 0/1	
+Map 1: 0/1	Map 2: 0/3	Map 4: 0/1	Map 5: 0/1	Reducer 3: 0/1	
+Map 1: 0/1	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/1	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/1	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/1	Map 2: 1/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/1	Map 2: 2/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/1	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/1	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/initial_spark_compare
+OK
+Time taken: 25.364 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as with exact_wait_time as (
+    select
+        jobid,
+        system,
+        min(date) as date,
+        min(if(requestedtime>0,requestedtime,reservedtime)) as launchtime,
+        sum(
+            case
+                when (allocatedtime>0 and requestedtime>0) then
+                    (allocatedtime-requestedtime)/1000*memory
+                else
+                    0
+                end
+            ) as total_waittime_exact
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        jobid,
+        system
+    )
+select
+    ew.launchtime,
+    ew.date,
+    jc.*, 
+    jws.memory_waiting as memory_waiting_sec,
+    ew.total_waittime_exact,
+    jws.max_mem_capacity_robbed_mbsec,
+    jwn.max_mem_capacity_robbed_mbmin,
+    jwn.memory_sec_convrt,
+    jws.elastic_unfairness_mem_capped_mbsec,
+    jwn.elastic_unfairness_mem_capped_mbmin,
+    jws.competing_job_mem_capped_mbsec,
+    jwn.competing_job_mem_capped_mbmin,
+    jws.max_vcr_capacity_robbed_vcrsec,
+    jwn.max_vcr_capacity_robbed_vcrmin,
+    jws.elastic_unfairness_vcore_capped_vcrsec,
+    jwn.elastic_unfairness_vcore_capped_vcrmin,
+    jws.competing_job_vcore_capped_vcrsec,
+    jwn.competing_job_vcore_capped_vcrmin
+from
+    job_categories_from_spark as jc
+join
+    job_wait_reasons_sec_granularity as jws
+on
+    jc.job_id=jws.job_id
+join
+    job_wait_reasons_min_granularity as jwn
+on
+    jws.job_id=jwn.job_id
+join
+    exact_wait_time as ew
+on
+    jwn.job_id=ew.jobid
+
+-------------------------------------------------------------------
+Starting query at: Mon Sep 28 18:14:08 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_fdc298db-78ee-4eac-905b-20bced674c3e_1971320806.txt
+OK
+Time taken: 0.621 seconds
+OK
+Time taken: 0.471 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1443438727599_1627)
+
+Map 1: -/-	Map 2: -/-	Map 4: -/-	Map 5: -/-	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 0/1	Map 5: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 0/1	Map 5: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/2	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 1/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 2/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/2	Map 2: 2/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/2	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/2	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 1/1	
+Map 1: 1/2	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 1/1	
+Map 1: 2/2	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/initial_spark_compare
+OK
+Time taken: 29.135 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as with exact_wait_time as (
+    select
+        jobid,
+        system,
+        min(date) as date,
+        min(if(requestedtime>0,requestedtime,reservedtime)) as launchtime,
+        sum(
+            case
+                when (allocatedtime>0 and requestedtime>0) then
+                    (allocatedtime-requestedtime)/1000*memory
+                else
+                    0
+                end
+            ) as total_waittime_exact
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        jobid,
+        system
+    )
+select
+    ew.launchtime,
+    ew.date,
+    jc.*, 
+    jws.memory_waiting as memory_waiting_sec,
+    ew.total_waittime_exact,
+    jws.max_mem_capacity_robbed_mbsec,
+    jwn.max_mem_capacity_robbed_mbmin,
+    jwn.memory_sec_convrt,
+    jws.elastic_unfairness_mem_capped_mbsec,
+    jwn.elastic_unfairness_mem_capped_mbmin,
+    jws.competing_job_mem_capped_mbsec,
+    jwn.competing_job_mem_capped_mbmin,
+    jws.max_vcr_capacity_robbed_vcrsec,
+    jwn.max_vcr_capacity_robbed_vcrmin,
+    jws.elastic_unfairness_vcore_capped_vcrsec,
+    jwn.elastic_unfairness_vcore_capped_vcrmin,
+    jws.competing_job_vcore_capped_vcrsec,
+    jwn.competing_job_vcore_capped_vcrmin
+from
+    job_categories_from_spark as jc
+join
+    job_wait_reasons_sec_granularity as jws
+on
+    jc.job_id=jws.job_id
+join
+    job_wait_reasons_min_granularity as jwn
+on
+    jws.job_id=jwn.job_id
+join
+    exact_wait_time as ew
+on
+    jwn.job_id=ew.jobid
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 29 18:11:03 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_d734c3c9-760b-489c-96d7-9f5fe72251c5_966213630.txt
+OK
+Time taken: 0.573 seconds
+OK
+Time taken: 0.423 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1443438727599_7059)
+
+Map 1: -/-	Map 2: -/-	Map 4: -/-	Map 5: -/-	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 0/1	Map 5: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 0/1	Map 5: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 0/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 1/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 2/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/2	Map 2: 2/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/2	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 0/1	
+Map 1: 1/2	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 1/1	
+Map 1: 2/2	Map 2: 3/3	Map 4: 1/1	Map 5: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/initial_spark_compare
+OK
+Time taken: 28.131 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as with exact_wait_time as (
+    select
+        jobid,
+        system,
+        min(date) as date,
+        min(if(requestedtime>0,requestedtime,reservedtime)) as launchtime,
+        sum(
+            case
+                when (allocatedtime>0 and requestedtime>0) then
+                    (allocatedtime-requestedtime)/1000*memory
+                else
+                    0
+                end
+            ) as total_waittime_exact
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        jobid,
+        system
+    )
+select
+    ew.launchtime,
+    ew.date,
+    jc.*, 
+    --jws.memory_waiting as memory_waiting_sec,
+    ew.total_waittime_exact,
+    --jws.max_mem_capacity_robbed_mbsec,
+    jwn.max_mem_capacity_robbed_mbmin,
+    jwn.memory_sec_convrt,
+    --jws.elastic_unfairness_mem_capped_mbsec,
+    jwn.elastic_unfairness_mem_capped_mbmin,
+    --jws.competing_job_mem_capped_mbsec,
+    jwn.competing_job_mem_capped_mbmin,
+    --jws.max_vcr_capacity_robbed_vcrsec,
+    jwn.max_vcr_capacity_robbed_vcrmin,
+    --jws.elastic_unfairness_vcore_capped_vcrsec,
+    jwn.elastic_unfairness_vcore_capped_vcrmin,
+    --jws.competing_job_vcore_capped_vcrsec,
+    jwn.competing_job_vcore_capped_vcrmin
+from
+    job_categories_from_spark as jc
+--join
+--    job_wait_reasons_sec_granularity as jws
+--on
+--    jc.job_id=jws.job_id
+join
+    job_wait_reasons_min_granularity as jwn
+on
+    jc.job_id=jwn.job_id
+join
+    exact_wait_time as ew
+on
+    jwn.job_id=ew.jobid
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 29 21:43:04 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_0d3573cf-7b96-4c0b-949c-784724282bde_1849095804.txt
+OK
+Time taken: 0.609 seconds
+OK
+Time taken: 0.426 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1443438727599_7621)
+
+Map 1: -/-	Map 2: -/-	Map 4: -/-	Reducer 3: 0/1	
+Map 1: -/-	Map 2: -/-	Map 4: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 0/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 0/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 1/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 3/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 3/3	Map 4: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/initial_spark_compare
+OK
+Time taken: 24.295 seconds
+
+===================================================================
+set START_DATE='2015-07-08';
+set END_DATE='2015-07-14';
+set FACT_TABLE=eric_cluster_metrics_dev_4.container_fact;
+
+use thomas_test;
+
+drop table if exists initial_spark_compare;
+
+create table initial_spark_compare
+as with exact_wait_time as (
+    select
+        jobid,
+        system,
+        min(date) as date,
+        min(if(requestedtime>0,requestedtime,reservedtime)) as launchtime,
+        sum(
+            case
+                when (allocatedtime>0 and requestedtime>0) then
+                    (allocatedtime-requestedtime)/1000*memory
+                else
+                    0
+                end
+            ) as total_waittime_exact
+    from
+        ${hiveconf:FACT_TABLE}
+    where
+        date between ${hiveconf:START_DATE} and ${hiveconf:END_DATE}
+    group by
+        jobid,
+        system
+    )
+select
+    ew.launchtime,
+    ew.date,
+    jc.*, 
+    --jws.memory_waiting as memory_waiting_sec,
+    ew.total_waittime_exact,
+    --jws.max_mem_capacity_robbed_mbsec,
+    jwn.max_mem_capacity_robbed_mbmin,
+    jwn.memory_sec_convrt,
+    --jws.elastic_unfairness_mem_capped_mbsec,
+    jwn.elastic_unfairness_mem_capped_mbmin,
+    --jws.competing_job_mem_capped_mbsec,
+    jwn.competing_job_mem_capped_mbmin,
+    --jws.max_vcr_capacity_robbed_vcrsec,
+    jwn.max_vcr_capacity_robbed_vcrmin,
+    --jws.elastic_unfairness_vcore_capped_vcrsec,
+    jwn.elastic_unfairness_vcore_capped_vcrmin,
+    --jws.competing_job_vcore_capped_vcrsec,
+    jwn.competing_job_vcore_capped_vcrmin
+from
+    job_categories_from_spark as jc
+--join
+--    job_wait_reasons_sec_granularity as jws
+--on
+--    jc.job_id=jws.job_id
+join
+    job_wait_reasons_min_granularity as jwn
+on
+    jc.job_id=jwn.job_id
+join
+    exact_wait_time as ew
+on
+    jwn.job_id=ew.jobid
+
+-------------------------------------------------------------------
+Starting query at: Tue Sep 29 21:56:47 UTC 2015
+-------------------------------------------------------------------
+
+
+Logging initialized using configuration in file:/etc/hive-0.13.1/hive-log4j.properties
+Hive history file=/home/hive/log/tnystrand/hive_job_log_b142ba98-825c-4174-b174-873e3ce2edb3_1049780492.txt
+OK
+Time taken: 0.612 seconds
+OK
+Time taken: 0.427 seconds
+Total jobs = 1
+Launching Job 1 out of 1
+
+
+Status: Running (application id: application_1443438727599_7694)
+
+Map 1: -/-	Map 2: -/-	Map 4: -/-	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: -/-	Map 4: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 0/1	Reducer 3: 0/1	
+Map 1: 0/2	Map 2: 0/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 1/2	Map 2: 0/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 0/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 0/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 1/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 2/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 3/3	Map 4: 1/1	Reducer 3: 0/1	
+Map 1: 2/2	Map 2: 3/3	Map 4: 1/1	Reducer 3: 1/1	
+Status: Finished successfully
+Moving data to: hdfs://nn-dogfood.s3s.altiscale.com:8020/hive/thomas_test.db/initial_spark_compare
+OK
+Time taken: 25.805 seconds
+

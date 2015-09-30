@@ -11,8 +11,9 @@ as with exact_wait_time as (
     select
         jobid,
         system,
+        min(queue) as queue,
         min(date) as date,
-        min(requestedtime>0) as launchtime,
+        min(if(requestedtime>0,requestedtime,reservedtime)) as launchtime,
         sum(
             case
                 when (allocatedtime>0 and requestedtime>0) then
@@ -20,7 +21,15 @@ as with exact_wait_time as (
                 else
                     0
                 end
-            ) as total_waittime_exact
+            ) as total_waittime_exact,
+        avg(
+            case
+                when (completed>0 and runningtime>0) then
+                    (completed-runningtime)/1000*memory
+                else
+                    0
+                end
+            ) as avg_runningtime_exact
     from
         ${hiveconf:FACT_TABLE}
     where
@@ -32,32 +41,34 @@ as with exact_wait_time as (
 select
     ew.launchtime,
     ew.date,
-    jc.*, 
-    jws.memory_waiting as memory_waiting_sec,
+    ew.queue,
+    ew.avg_runningtime_exact,
+    jc.*,
+    --jws.memory_waiting as memory_waiting_sec,
     ew.total_waittime_exact,
-    jws.max_mem_capacity_robbed_mbsec,
+    --jws.max_mem_capacity_robbed_mbsec,
     jwn.max_mem_capacity_robbed_mbmin,
     jwn.memory_sec_convrt,
-    jws.elastic_unfairness_mem_capped_mbsec,
+    --jws.elastic_unfairness_mem_capped_mbsec,
     jwn.elastic_unfairness_mem_capped_mbmin,
-    jws.competing_job_mem_capped_mbsec,
+    --jws.competing_job_mem_capped_mbsec,
     jwn.competing_job_mem_capped_mbmin,
-    jws.max_vcr_capacity_robbed_vcrsec,
+    --jws.max_vcr_capacity_robbed_vcrsec,
     jwn.max_vcr_capacity_robbed_vcrmin,
-    jws.elastic_unfairness_vcore_capped_vcrsec,
+    --jws.elastic_unfairness_vcore_capped_vcrsec,
     jwn.elastic_unfairness_vcore_capped_vcrmin,
-    jws.competing_job_vcore_capped_vcrsec,
+    --jws.competing_job_vcore_capped_vcrsec,
     jwn.competing_job_vcore_capped_vcrmin
 from
     job_categories_from_spark as jc
-join
-    job_wait_reasons_sec_granularity as jws
-on
-    jc.job_id=jws.job_id
+--join
+--    job_wait_reasons_sec_granularity as jws
+--on
+--    jc.job_id=jws.job_id
 join
     job_wait_reasons_min_granularity as jwn
 on
-    jws.job_id=jwn.job_id
+    jc.job_id=jwn.job_id
 join
     exact_wait_time as ew
 on
